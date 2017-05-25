@@ -2,32 +2,28 @@
 "use strict";
 
 const prog = require('caporal');
+var chalk       = require('chalk');
+var figlet      = require('figlet');
+var packageInfo = require('./package.json');
+var User = require('./api/user');
+
+console.log(
+  chalk.blue(
+    figlet.textSync('ApiWay', { horizontalLayout: 'full' })
+  )
+);
 
 prog
-  .version('0.0.3')
-  // the "order" command
-  .help(`My Custom help !!`)
-  .command('order', 'Order a pizza')
-  .help(`My Custom help about the order command !!`)
-  .alias('give-it-to-me')
-  // <kind> will be auto-magicaly autocompleted by providing the user with 3 choices
-  .argument('<kind>', 'Kind of pizza', ["margherita", "hawaiian", "fredo"])
-  .argument('<from-store>', 'Which store to order from')
-  // enable auto-completion for <from-store> argument using a sync function returning an array
-  .complete(function() {
-    return ['store-1', 'store-2', 'store-3', 'store-4', 'store-5'];
-  })
-
-  .argument('<account>', 'Which account id to use')
-  // enable auto-completion for <account> argument using a Promise
-  .complete(function() {
-    return Promise.resolve(['account-1', 'account-2']);
-  })
+  .version(packageInfo.version)
+  // the "login" command
+  .command('login', 'Login to apiway.io')
+  .help(`OAuth login`)
+  .alias('sign-in')
+  .argument('<oauth-provider>', 'OAuth provider', ["github"])
 
   .option('-n, --number <num>', 'Number of pizza', prog.INT, 1)
   .option('-d, --discount <amount>', 'Discount offer', prog.FLOAT)
   .option('-p, --pay-by <mean>', 'Pay by option')
-  // enable auto-completion for -p | --pay-by argument using a Promise
   .complete(function() {
     return Promise.resolve(['cash', 'credit-card']);
   })
@@ -35,10 +31,25 @@ prog
   // --extra will be auto-magicaly autocompleted by providing the user with 3 choices
   .option('-e <ingredients>', 'Add extra ingredients', ['pepperoni', 'onion', 'cheese'])
   .option('--add-ingredients <ingredients>', 'Add extra ingredients', prog.LIST)
-  .action(function(args, options, logger) {
-    logger.info("Command 'order' called with:");
-    logger.info("arguments: %j", args);
-    logger.info("options: %j", options);
+  .action((args, options, logger) => {
+    User.githubAuth(function(err, authed) {
+      if (err) {
+        switch (err.code) {
+          case 401:
+            console.log(chalk.red('Couldn\'t log you in. Please try again.'));
+            break;
+          case 422:
+            console.log(chalk.red('You already have an access token.'));
+            break;
+        }
+      }
+      if (authed) {
+        console.log(chalk.green('Sucessfully authenticated!'));
+      }
+    });
+    // logger.info("Command 'order' called with:");
+    // logger.info("arguments: %j", args);
+    // logger.info("options: %j", options);
   })
 
   // the "return" command
