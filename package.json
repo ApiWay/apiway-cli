@@ -1,6 +1,6 @@
 {
   "name": "apiway-cli",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "CLI for apiway.io",
   "main": "index.js",
   "directories": {
@@ -8,6 +8,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "apiway": "./index.js"
   },
   "repository": {
     "type": "git",
@@ -27,5 +30,8 @@
   "bugs": {
     "url": "https://github.com/ApiWay/apiway-cli/issues"
   },
-  "homepage": "https://github.com/ApiWay/apiway-cli#readme"
+  "homepage": "https://github.com/ApiWay/apiway-cli#readme",
+  "dependencies": {
+    "caporal": "^0.5.0"
+  }
 }
