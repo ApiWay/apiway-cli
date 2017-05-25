@@ -12,6 +12,9 @@ var git         = require('simple-git')();
 var touch       = require('touch');
 var fs          = require('fs');
 var files       = require('../../lib/files');
+var ApiWay  = require('apiway.js');
+let apiway = new ApiWay({});
+let awUser = apiway.getUser();
 
 // if (files.directoryExists('.git')) {
 //   console.log(chalk.red('Already a git repository!'));
@@ -54,7 +57,7 @@ function getGithubCredentials(callback) {
 }
 
 function getGithubToken(callback) {
-  var prefs = new Preferences('ginit');
+  var prefs = new Preferences('apiway');
 
   if (prefs.github && prefs.github.token) {
     return callback(null, prefs.github.token);
@@ -204,6 +207,16 @@ function githubAuth(callback) {
     });
     return callback(null, token);
   });
+}
+
+exports.login = function () {
+  awUser.updateProfile({
+    login: "bluehackmaster",
+    avatarUrl: "http://apiway.io/bok",
+    email: "master@bluehack.net",
+    oauthProvider: "github"
+  })
+
 }
 
 exports.githubAuth = githubAuth
