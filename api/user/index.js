@@ -12,7 +12,7 @@ var git         = require('simple-git')();
 var touch       = require('touch');
 var fs          = require('fs');
 var files       = require('../../lib/files');
-var ApiWay  = require('apiway.js');
+var ApiWay  = require('apiway.js')
 let apiway = new ApiWay({});
 let awUser = apiway.getUser();
 
@@ -209,14 +209,28 @@ function githubAuth(callback) {
   });
 }
 
-exports.login = function () {
-  awUser.updateProfile({
-    login: "bluehackmaster",
-    avatarUrl: "http://apiway.io/bok",
-    email: "master@bluehack.net",
-    oauthProvider: "github"
+function getProfile(callback) {
+  var status = new Spinner('Getting profile ...');
+  status.start();
+  github.users.get({}, (err, res) => {
+    status.stop();
+    callback(res.data)
   })
+}
 
+exports.login = function () {
+  getProfile((data) => {
+    var status = new Spinner('Update profile to apiway.io ...');
+    status.start();
+    awUser.updateProfile({
+      login: data.login,
+      avatarUrl: data.avatar_url,
+      email: data.email,
+      oauthProvider: "github"
+    }).then(() => {
+      status.stop()
+    })
+  })
 }
 
 exports.githubAuth = githubAuth
