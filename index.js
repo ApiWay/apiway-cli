@@ -36,6 +36,7 @@ prog
         }
       }
       if (authed) {
+        User.login()
         console.log(chalk.green('Sucessfully authenticated!'));
       }
     });
