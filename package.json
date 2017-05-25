@@ -1,0 +1,31 @@
+{
+  "name": "apiway-cli",
+  "version": "0.0.1",
+  "description": "CLI for apiway.io",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ApiWay/apiway-cli.git"
+  },
+  "keywords": [
+    "apiway",
+    "api",
+    "cli",
+    "mocha",
+    "unit",
+    "test",
+    "test"
+  ],
+  "author": "bluehackmaster",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ApiWay/apiway-cli/issues"
+  },
+  "homepage": "https://github.com/ApiWay/apiway-cli#readme"
+}
