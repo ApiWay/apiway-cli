@@ -40,6 +40,7 @@ prog
             break;
           case 422:
             console.log(chalk.red('You already have an access token.'));
+            console.log(chalk.red('Delete the old access token (Go to https://github.com/settings/tokens)'));
             break;
         }
       }
