@@ -4,7 +4,6 @@ var chalk       = require('chalk');
 var CLI         = require('clui');
 var figlet      = require('figlet');
 var inquirer    = require('inquirer');
-var Preferences = require('preferences');
 var Spinner     = CLI.Spinner;
 var github = require('../github');
 var _           = require('lodash');
@@ -15,6 +14,9 @@ var files       = require('../../lib/files');
 var ApiWay  = require('apiway.js')
 let aw = new ApiWay({});
 let awUser = aw.getUser();
+var Configstore = require('configstore');
+var pkg         = require('../../package.json')
+const conf = new Configstore(pkg.name, {foo: 'bar'});
 
 exports.login = function () {
   github.githubAuth(function(err, authed) {
@@ -39,9 +41,9 @@ exports.login = function () {
           email: data.email,
           oauthProvider: "github"
         }).then((res) => {
-          var prefs = new Preferences('apiway');
           if (res.data.data.userId) {
-            prefs.apiway = res.data.data
+            conf.set('userId', res.data.data.userId)
+            conf.set('login', data.login)
           }
           status.stop()
         })

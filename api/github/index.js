@@ -1,8 +1,10 @@
+//GitHubApi Document : https://mikedeboer.github.io/node-github/
+
 var chalk       = require('chalk');
 var CLI         = require('clui');
 var figlet      = require('figlet');
 var inquirer    = require('inquirer');
-var Preferences = require('preferences');
+var Configstore = require('configstore');
 var Spinner     = CLI.Spinner;
 var GitHubApi   = require('github');
 var _           = require('lodash');
@@ -10,6 +12,9 @@ var git         = require('simple-git')();
 var touch       = require('touch');
 var fs          = require('fs');
 var files       = require('../../lib/files');
+var pkg         = require('../../package.json')
+const conf = new Configstore(pkg.name, {foo: 'bar'});
+
 
 // if (files.directoryExists('.git')) {
 //   console.log(chalk.red('Already a git repository!'));
@@ -52,10 +57,8 @@ function getGithubCredentials(callback) {
 }
 
 function getGithubToken(callback) {
-  var prefs = new Preferences('apiway');
-
-  if (prefs.github && prefs.github.token) {
-    return callback(null, prefs.github.token);
+  if (conf.get('github.token')) {
+    return callback(null, conf.get('github.token'))
   }
 
   getGithubCredentials(function(credentials) {
@@ -80,9 +83,7 @@ function getGithubToken(callback) {
         return callback( err );
       }
       if (res.data.token) {
-        prefs.github = {
-          token : res.data.token
-        };
+        conf.set('github.token', res.data.token)
         return callback(null, res.data.token);
       }
       return callback();
@@ -202,6 +203,54 @@ function githubAuth(callback) {
     });
     return callback(null, token);
   });
+}
+
+exports.getOrgs = function () {
+  return new Promise ((resolve, reject) => {
+    github.authenticate({
+      type: "oauth",
+      token: conf.get('github.token')
+    });
+    github.users.getOrgs({}, (err, res) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(res.data)
+      }
+    })
+  })
+}
+
+exports.getReposByUser = function (callback) {
+  github.authenticate({
+    type: "oauth",
+    token: conf.get('github.token')
+  });
+  github.repos.getAll({type:'owner'}, (err, res) => {
+    if (err) {
+      reject(err)
+    } else {
+      // console.log(res.data)
+      callback(res.data)
+    }
+  })
+}
+
+exports.getRepos = function (login, callback) {
+  github.authenticate({
+    type: "oauth",
+    token: conf.get('github.token')
+  });
+
+  if (login == conf.get('login')) {
+    github.repos.getAll({type:'owner'}, (err, res) => {
+      callback(res.data)
+    })
+  } else {
+    github.repos.getForOrg({org:login}, (err, res) => {
+      callback(res.data)
+    })
+  }
 }
 
 exports.getProfile = function (callback) {

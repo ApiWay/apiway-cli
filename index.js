@@ -6,6 +6,7 @@ var chalk       = require('chalk');
 var figlet      = require('figlet');
 var packageInfo = require('./package.json');
 var awUser = require('./api/user');
+var awProject = require('./api/project');
 
 console.log(
   chalk.blue(
@@ -33,8 +34,16 @@ prog
   .option('-a, --add <repo>', 'Add a TC repository')
   .option('-l, --list', 'List up added TC repositories')
   .action((args, options, logger) => {
-    logger.info("arguments: %j", args);
-    logger.info("options: %j", options);
+    if (options.add) {
+      let repo = {
+        name: options.add,
+        html_url: "www.xxx.xxx",
+        git_url: "git@xxxxx",
+      }
+      awProject.add(repo ).then(() => {
+        console.log('project add done')
+      })
+    }
   })
 
 prog.parse(process.argv);
