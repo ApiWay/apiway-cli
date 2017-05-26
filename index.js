@@ -5,7 +5,7 @@ const prog = require('caporal');
 var chalk       = require('chalk');
 var figlet      = require('figlet');
 var packageInfo = require('./package.json');
-var User = require('./api/user');
+var awUser = require('./api/user');
 
 console.log(
   chalk.blue(
@@ -19,30 +19,22 @@ prog
   .command('login', 'Login to apiway.io')
   .help(`Login with OAuth`)
   .alias('sign-in')
-  .option('--oauth <oauth-provider>', 'OAuth provider (default: github)', ["github"])
-  // .argument('<oauth-provider>', 'OAuth provider', ["github"])
-
+  .option('-o, --oauth <oauth-provider>', 'OAuth provider (default: github)', ["github"])
   .action((args, options, logger) => {
-    User.githubAuth(function(err, authed) {
-      if (err) {
-        switch (err.code) {
-          case 401:
-            console.log(chalk.red('Couldn\'t log you in. Please try again.'));
-            break;
-          case 422:
-            console.log(chalk.red('You already have an access token.'));
-            console.log(chalk.red('Delete the old access token (Go to https://github.com/settings/tokens)'));
-            break;
-        }
-      }
-      if (authed) {
-        User.login()
-        console.log(chalk.green('Sucessfully authenticated!'));
-      }
-    });
+    awUser.login()
     // logger.info("Command 'order' called with:");
     // logger.info("arguments: %j", args);
     // logger.info("options: %j", options);
+  })
+
+  // the project command
+  .command('project', "Project command for apiway.io")
+  .help('')
+  .option('-a, --add <repo>', 'Add a TC repository')
+  .option('-l, --list', 'List up added TC repositories')
+  .action((args, options, logger) => {
+    logger.info("arguments: %j", args);
+    logger.info("options: %j", options);
   })
 
 prog.parse(process.argv);
