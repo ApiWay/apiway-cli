@@ -13,8 +13,8 @@ var touch       = require('touch');
 var fs          = require('fs');
 var files       = require('../../lib/files');
 var ApiWay  = require('apiway.js')
-let apiway = new ApiWay({});
-let awUser = apiway.getUser();
+let aw = new ApiWay({});
+let awUser = aw.getUser();
 
 exports.login = function () {
   github.githubAuth(function(err, authed) {
@@ -38,7 +38,11 @@ exports.login = function () {
           avatarUrl: data.avatar_url,
           email: data.email,
           oauthProvider: "github"
-        }).then(() => {
+        }).then((res) => {
+          var prefs = new Preferences('apiway');
+          if (res.data.data.userId) {
+            prefs.apiway = res.data.data
+          }
           status.stop()
         })
       })
