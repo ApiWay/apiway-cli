@@ -35,6 +35,12 @@ prog
   .option('-l, --list', 'List up added TC repositories')
   .action((args, options, logger) => {
     if (options.add) {
+      if (options.add == true) {
+
+      } else {
+
+      }
+    }
       let repo = {
         name: options.add,
         html_url: "www.xxx.xxx",
@@ -43,7 +49,6 @@ prog
       awProject.add(repo ).then(() => {
         console.log('project add done')
       })
-    }
   })
 
 prog.parse(process.argv);

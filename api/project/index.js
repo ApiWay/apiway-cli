@@ -25,6 +25,9 @@ exports.add  = function (repo) {
     github.getOrgs()
     .then((orgs) => selectLogin(orgs))
     .then((login) => selectRepo(login))
+    .then(() => {
+      resolve()
+    })
   })
 }
 

@@ -207,36 +207,27 @@ function githubAuth(callback) {
 
 exports.getOrgs = function () {
   return new Promise ((resolve, reject) => {
+    var status = new Spinner('Getting orgs ...');
+    status.start();
     github.authenticate({
       type: "oauth",
       token: conf.get('github.token')
     });
     github.users.getOrgs({}, (err, res) => {
       if (err) {
+        status.stop();
         reject(err)
       } else {
+        status.stop();
         resolve(res.data)
       }
     })
   })
 }
 
-exports.getReposByUser = function (callback) {
-  github.authenticate({
-    type: "oauth",
-    token: conf.get('github.token')
-  });
-  github.repos.getAll({type:'owner'}, (err, res) => {
-    if (err) {
-      reject(err)
-    } else {
-      // console.log(res.data)
-      callback(res.data)
-    }
-  })
-}
-
 exports.getRepos = function (login, callback) {
+  var status = new Spinner('Getting repos ...');
+  status.start();
   github.authenticate({
     type: "oauth",
     token: conf.get('github.token')
@@ -244,10 +235,12 @@ exports.getRepos = function (login, callback) {
 
   if (login == conf.get('login')) {
     github.repos.getAll({type:'owner'}, (err, res) => {
+      status.stop()
       callback(res.data)
     })
   } else {
     github.repos.getForOrg({org:login}, (err, res) => {
+      status.stop()
       callback(res.data)
     })
   }
