@@ -1,9 +1,8 @@
-# apiway-cli
-
-CLI for apiway.io
+![logo](https://github.com/ApiWay/apiway-design/blob/master/img/logo.png)
+# ApiWay: CLI
+Command Line Interface for apiway.io
 
 ![ApiWay CLI](https://github.com/ApiWay/apiway-cli/blob/master/docs/img/apiway-cli.gif)
-
 
 ## Installation
 ```shell
