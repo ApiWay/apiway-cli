@@ -225,6 +225,20 @@ exports.getOrgs = function () {
   })
 }
 
+exports.checkRepo = function (options, callback) {
+  var status = new Spinner('Checking repo ...');
+  status.start();
+  github.repos.get({
+    owner: options.owner,
+    repo: options.repo},
+    (err, res) => {
+      status.stop()
+      if (res.data.full_name == `${options.owner}/${options.repo}`) {
+        callback(res.data.full_name)
+      }
+  })
+}
+
 exports.getRepos = function (login, callback) {
   var status = new Spinner('Getting repos ...');
   status.start();

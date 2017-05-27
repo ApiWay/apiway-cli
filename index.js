@@ -28,27 +28,58 @@ prog
     // logger.info("options: %j", options);
   })
 
+  // the add command
+  .command('add', "Add a project")
+  .help('')
+  .option('-r, --repo <repo>', 'repository name')
+  .option('-o, --owner <owner>', 'A owner of a repository')
+  .action((args, options, logger) => {
+    if (options.repo == true) {
+      console.log(chalk.red('Need a repository name'));
+      showHelp()
+    }
+    if (options.owner == true) {
+      console.log(chalk.red('Need a owner name'));
+      showHelp()
+    }
+    awProject.add(options).then((repo) => {
+      console.log(chalk.green(`Successfully added ${repo}`));
+    })
+  })
+
+  // the remove command
+  .command('remove', "Project command for apiway.io")
+  .help('')
+  .option('-a, --add <repo>', 'Add a repository')
+  .option('-o, --owner <owner>', 'A owner of a repository')
+  .option('-l, --list', 'List up added TC repositories')
+  .action((args, options, logger) => {
+    awProject.add(options).then((repo) => {
+      console.log(chalk.green(`Successfully added ${repo}`));
+    })
+  })
+
   // the project command
   .command('project', "Project command for apiway.io")
   .help('')
-  .option('-a, --add <repo>', 'Add a TC repository')
+  .option('-a, --add <repo>', 'Add a repository')
+  .option('-o, --owner <owner>', 'A owner of a repository')
   .option('-l, --list', 'List up added TC repositories')
   .action((args, options, logger) => {
     if (options.add) {
-      if (options.add == true) {
-
-      } else {
-
-      }
-    }
-      let repo = {
-        name: options.add,
-        html_url: "www.xxx.xxx",
-        git_url: "git@xxxxx",
-      }
-      awProject.add(repo ).then(() => {
+      awProject.add(options).then(() => {
         console.log('project add done')
       })
+    }
   })
 
 prog.parse(process.argv);
+
+function showHelp() {
+  let argv = []
+  process.argv.forEach(arg => {
+    argv.push(arg)
+  })
+  argv[3] = '-h'
+  prog.parse(argv)
+}

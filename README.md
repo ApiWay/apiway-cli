@@ -9,10 +9,26 @@ $ npm install apiway-cli -g
 
 ## Usage
 ### Login
+Default git provider is Github
 ```shell
-$ apiway add ${PROJECT_TOP_DIR}
+$ apiway login
 ```
-### Add project
+### Add a project
+Dialog mode
 ```shell
-$ apiway add ${PROJECT_TOP_DIR}
+$ apiway add
 ```
+You can specify a repository name
+(default owner is authenticated user)
+```shell
+$ apiway add -r repo
+```
+You can specify a owner name
+```shell
+$ apiway add -o owner
+```
+You can specify both repository and owner
+```shell
+$ apiway project -r repo -o owner
+```
+

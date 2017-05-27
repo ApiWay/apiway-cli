@@ -20,13 +20,45 @@ var Configstore = require('configstore');
 var pkg         = require('../../package.json')
 const conf = new Configstore(pkg.name, {foo: 'bar'});
 
-exports.add  = function (repo) {
+exports.add  = function (options) {
   return new Promise ((resolve, reject) => {
-    github.getOrgs()
-    .then((orgs) => selectLogin(orgs))
-    .then((login) => selectRepo(login))
-    .then(() => {
-      resolve()
+
+    if (!options.owner && !options.repo) {
+        github.getOrgs()
+          .then((orgs) => selectLogin(orgs))
+          .then((login) => selectRepo(login))
+          .then((fullName) => {
+            resolve(fullName)
+          })
+    } else if (options.owner == null && options.repo != null) {
+        github.getOrgs()
+          .then((orgs) => selectLogin(orgs))
+          .then((login) => checkRepo(login, options.repo))
+          .then((fullName) => {
+            resolve(fullName)
+          })
+    } else if (options.owner != null && options.repo == null) {
+          selectRepo(options.owner)
+          .then((fullName) => {
+            resolve(fullName)
+          })
+    } else if (options.owner != null && options.repo != null) {
+          checkRepo(options.owner, options.repo)
+          .then((fullName) => {
+            resolve(fullName)
+          })
+    }
+  })
+}
+
+function checkRepo(owner, repo) {
+  return new Promise ((resolve, reject) => {
+    let options = {
+      owner: owner,
+      repo: repo
+    }
+    github.checkRepo(options, function (fullName) {
+      resolve(fullName)
     })
   })
 }
@@ -39,7 +71,7 @@ function selectRepo(login) {
         repoArray.push(repo.full_name)
       })
       promptRepos(repoArray, (data) => {
-        resolve(data)
+        resolve(data.repo)
       })
     })
   })
