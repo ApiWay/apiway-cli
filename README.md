@@ -71,3 +71,5 @@ $ apiway project -d
 * [npm: apiway.js](https://www.npmjs.com/package/apiway.js)
 #### Cloud (Kubernetes)
 * [apiway-cloud-orchestration](https://github.com/ApiWay/apiway-cloud-orchestration)
+#### Design
+* [apiway-design](https://github.com/ApiWay/apiway-design)
