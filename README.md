@@ -1,9 +1,8 @@
-# apiway-cli
-
-CLI for apiway.io
+![logo](https://github.com/ApiWay/apiway-design/blob/master/img/logo.png)
+# ApiWay: CLI
+Command Line Interface for apiway.io
 
 ![ApiWay CLI](https://github.com/ApiWay/apiway-cli/blob/master/docs/img/apiway-cli.gif)
-
 
 ## Installation
 ```shell
@@ -71,3 +70,5 @@ $ apiway project -d
 * [npm: apiway.js](https://www.npmjs.com/package/apiway.js)
 #### Cloud (Kubernetes)
 * [apiway-cloud-orchestration](https://github.com/ApiWay/apiway-cloud-orchestration)
+#### Design
+* [apiway-design](https://github.com/ApiWay/apiway-design)
