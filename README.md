@@ -2,6 +2,7 @@
 
 CLI for apiway.io
 
+![ApiWay Tech. Stack](https://github.com/ApiWay/apiway-cli/blob/master/docs/img/apiway-cli.gif)
 
 
 ## Installation
