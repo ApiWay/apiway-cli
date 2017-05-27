@@ -7,6 +7,9 @@ var figlet      = require('figlet');
 var packageInfo = require('./package.json');
 var awUser = require('./api/user');
 var awProject = require('./api/project');
+var util = require('./util');
+
+util.clear()
 
 console.log(
   chalk.blue(
