@@ -72,13 +72,17 @@ Show all projects.
 ```shell
 $ apiway project
 ```
+Select mode : Show run history of selected Project
+```shell
+$ apiway project -p
+```
+Show run history of `projectName`
+```shell
+$ apiway project -p projectName
+```
 Show all projects with last status (Running/Pass/Fail/Broken)
 ```shell
 $ apiway project -s
-```
-Show a project's run history
-```shell
-$ apiway project -p project
 ```
 
 ![ApiWay Tech. Stack](https://github.com/ApiWay/apiway-cli/blob/master/docs/img/apiway_tech_stack.png)

@@ -16,9 +16,13 @@ var ApiWay  = require('apiway.js')
 let aw = new ApiWay({});
 let awUser = aw.getUser();
 let awProject = aw.getProject();
+let awInstance = aw.getInstance();
 var Configstore = require('configstore');
 var pkg         = require('../../package.json')
-const conf = new Configstore(pkg.name, {foo: 'bar'});
+const conf = require('../../util/config')
+const confStore = new Configstore(pkg.name, {foo: 'bar'});
+var repos = new Map();
+var tmpProjects = new Map();
 
 exports.add  = function (options) {
   return new Promise ((resolve, reject) => {
@@ -27,25 +31,53 @@ exports.add  = function (options) {
         github.getOrgs()
           .then((orgs) => selectLogin(orgs))
           .then((login) => selectRepo(login))
-          .then((fullName) => {
-            resolve(fullName)
+          .then((repo) => addRepo(repo))
+          .then((projectId) => {
+            showAddProjectDoneMsg(confStore.get(conf.LAST_ADDED_PROJECT), projectId)
+            resolve()
           })
     } else if (options.owner == null && options.repo != null) {
         github.getOrgs()
           .then((orgs) => selectLogin(orgs))
           .then((login) => checkRepo(login, options.repo))
-          .then((fullName) => {
-            resolve(fullName)
+          .then((repo) => addRepo(repo))
+          .then((projectId) => {
+            showAddProjectDoneMsg(confStore.get(conf.LAST_ADDED_PROJECT), projectId)
+            resolve()
           })
     } else if (options.owner != null && options.repo == null) {
-          selectRepo(options.owner)
-          .then((fullName) => {
-            resolve(fullName)
-          })
+        selectRepo(options.owner)
+          .then((repo) => addRepo(repo))
+          .then((projectId) => {
+            showAddProjectDoneMsg(confStore.get(conf.LAST_ADDED_PROJECT), projectId)
+            resolve()
+        })
     } else if (options.owner != null && options.repo != null) {
-          checkRepo(options.owner, options.repo)
-          .then((fullName) => {
-            resolve(fullName)
+        checkRepo(options.owner, options.repo)
+          .then((repo) => addRepo(repo))
+          .then((projectId) => {
+            showAddProjectDoneMsg(confStore.get(conf.LAST_ADDED_PROJECT), projectId)
+            resolve()
+        })
+    }
+  })
+}
+
+exports.project = function (options) {
+  return new Promise ((resolve, reject) => {
+    let userId = confStore.get('userId')
+    if (!options.project) {
+      getProjectsByUser(userId).then((data) => {
+        showProjects(data)
+        resolve()
+      })
+    } else if (options.project == true) {
+      getProjectsByUser(userId)
+        .then((projects) => selectProject(projects))
+        .then((project) => getInstancesByProject(project))
+        .then((instances) => {
+          showInstances(instances)
+          resolve()
           })
     }
   })
@@ -57,8 +89,23 @@ function checkRepo(owner, repo) {
       owner: owner,
       repo: repo
     }
-    github.checkRepo(options, function (fullName) {
-      resolve(fullName)
+    github.checkRepo(options, function (repo) {
+      resolve(repo)
+    })
+  })
+}
+
+function selectProject (projects) {
+  return new Promise ((resolve, reject) => {
+    let array = []
+    projects.forEach(project => {
+      if (project.full_name) {
+        array.push(project.full_name)
+        tmpProjects.set(project.full_name, project)
+      }
+    })
+    promptProjects(array, (data) => {
+      resolve(tmpProjects.get(data.project))
     })
   })
 }
@@ -69,9 +116,10 @@ function selectRepo(login) {
       let repoArray = []
       data.forEach(repo => {
         repoArray.push(repo.full_name)
+        repos.set(repo.full_name, repo)
       })
       promptRepos(repoArray, (data) => {
-        resolve(data.repo)
+        resolve(repos.get(data.repo))
       })
     })
   })
@@ -79,7 +127,7 @@ function selectRepo(login) {
 
 function selectLogin(orgs) {
   return new Promise ((resolve, reject) => {
-    let orgArray = [conf.get('login')]
+    let orgArray = [confStore.get('login')]
     orgs.forEach(org => {
       orgArray.push(org.login)
     })
@@ -108,28 +156,112 @@ function promptOrg(orgs, callback) {
       type: 'list',
       message: 'Select a user or organization',
       choices: orgs,
-      default: [conf.get('userId')],
+      default: [confStore.get('userId')],
     }
   ];
   inquirer.prompt(questions).then(callback);
 }
 
-function addRepo (repo) {
-  var data = {
-    name: repo.name,
-    full_name: repo.full_name,
-    owner: conf.get('userId'),
-    html_url: repo.html_url,
-    git_url: repo.git_url,
-    provider: "github"
-  }
-  awProject.addProject(data).then(res => {
-    console.log(res)
-    if (res!= null) {
-      resolve(res.data)
+function promptProjects (projects, callback) {
+  var questions = [
+    {
+      name: 'project',
+      type: 'list',
+      message: 'Select a project',
+      choices: projects
     }
-  }).catch(err => {
-    console.error(err)
-    reject(err)
+  ];
+  inquirer.prompt(questions).then(callback);
+}
+
+function getInstancesByProject (project) {
+  return new Promise ((resolve, reject) => {
+    var status = new Spinner('Geting instances ...');
+    status.start();
+    confStore.set(conf.LAST_ADDED_PROJECT, project.full_name)
+    awInstance.getInstancesByProject(project._id).then(res => {
+      if (res!= null) {
+        status.stop()
+        resolve(res.data.data.instances)
+      }
+    }).catch(err => {
+      console.error(err)
+      status.stop()
+      reject(err)
+    })
   })
+}
+
+function getProjectsByUser (userId) {
+  return new Promise ((resolve, reject) => {
+    var status = new Spinner('Geting projects ...');
+    status.start();
+    awProject.getProjectsByUser(userId).then(res => {
+      if (res!= null) {
+        status.stop()
+        resolve(res.data.data.projects)
+      }
+    }).catch(err => {
+      console.error(err)
+      status.stop()
+      reject(err)
+    })
+  })
+}
+
+function addRepo (repo) {
+  return new Promise ((resolve, reject) => {
+    var data = {
+      name: repo.name,
+      full_name: repo.full_name,
+      owner: confStore.get('userId'),
+      html_url: repo.html_url,
+      git_url: repo.git_url,
+      provider: "github"
+    }
+    confStore.set(conf.LAST_ADDED_PROJECT, repo.full_name)
+    awProject.addProject(data).then(res => {
+      if (res != null) {
+        resolve(res.data.projectId)
+      }
+    }).catch(err => {
+      console.error(err)
+      confStore.delete(conf.LAST_ADDED_PROJECT)
+      reject(err)
+    })
+  })
+}
+
+function showProjects (projects) {
+  console.log('[' + chalk.bold.yellow(confStore.get('login')) + '] Project list >')
+  projects.forEach((project, i) => {
+    makeProjectFormat(project, i)
+  })
+}
+
+function makeProjectFormat (project, index) {
+  console.log(index + '. ' + chalk.green(`${project.full_name}`))
+}
+
+function showAddProjectDoneMsg (projectName, projectId) {
+  console.log(chalk.bold.green(`${projectName}`) + ' is successfully added.')
+}
+
+function showInstances (instances) {
+  console.log('[' + chalk.bold.yellow(confStore.get(conf.LAST_ADDED_PROJECT)) + '] Run History >')
+  instances.forEach((instance, i) => {
+    makeInstanceFormat(instance, i)
+  })
+}
+
+function makeInstanceFormat (instance, index) {
+  let status
+  if (instance.status == "PASS") {
+    status = chalk.green(`${instance.status}  `)
+  } else if (instance.status == "FAIL") {
+    status = chalk.magenta(`${instance.status}  `)
+  } else if (instance.status == "BROKEN") {
+    status = chalk.red(`${instance.status}`)
+  }
+  console.log(index + '. ' + status + `:${instance._id}:`)
 }

@@ -45,35 +45,16 @@ prog
       console.log(chalk.red('Need a owner name'));
       showHelp()
     }
-    awProject.add(options).then((repo) => {
-      console.log(chalk.green(`Successfully added ${repo}`));
-    })
-  })
-
-  // the remove command
-  .command('remove', "Project command for apiway.io")
-  .help('')
-  .option('-a, --add <repo>', 'Add a repository')
-  .option('-o, --owner <owner>', 'A owner of a repository')
-  .option('-l, --list', 'List up added TC repositories')
-  .action((args, options, logger) => {
-    awProject.add(options).then((repo) => {
-      console.log(chalk.green(`Successfully added ${repo}`));
+    awProject.add(options).then(() => {
     })
   })
 
   // the project command
   .command('project', "Project command for apiway.io")
   .help('')
-  .option('-a, --add <repo>', 'Add a repository')
-  .option('-o, --owner <owner>', 'A owner of a repository')
-  .option('-l, --list', 'List up added TC repositories')
+  .option('-p, --project <projectName>', 'Project name')
   .action((args, options, logger) => {
-    if (options.add) {
-      awProject.add(options).then(() => {
-        console.log('project add done')
-      })
-    }
+    awProject.project(options)
   })
 
 prog.parse(process.argv);
