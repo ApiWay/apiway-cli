@@ -52,9 +52,9 @@ prog
   // the project command
   .command('project', "Project command for apiway.io")
   .help('')
-  .argument('[projectName]', 'Project name')
+  .option('-p, --project <projectName>', 'Project name')
   .action((args, options, logger) => {
-    awProject.project(args)
+    awProject.project(options)
   })
 
 prog.parse(process.argv);

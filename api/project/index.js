@@ -16,11 +16,13 @@ var ApiWay  = require('apiway.js')
 let aw = new ApiWay({});
 let awUser = aw.getUser();
 let awProject = aw.getProject();
+let awInstance = aw.getInstance();
 var Configstore = require('configstore');
 var pkg         = require('../../package.json')
 const conf = require('../../util/config')
 const confStore = new Configstore(pkg.name, {foo: 'bar'});
 var repos = new Map();
+var tmpProjects = new Map();
 
 exports.add  = function (options) {
   return new Promise ((resolve, reject) => {
@@ -61,13 +63,22 @@ exports.add  = function (options) {
   })
 }
 
-exports.project = function (args, options) {
+exports.project = function (options) {
   return new Promise ((resolve, reject) => {
-    if (args.projectName == null) {
-      let userId = confStore.get('userId')
+    let userId = confStore.get('userId')
+    if (!options.project) {
       getProjectsByUser(userId).then((data) => {
         showProjects(data)
+        resolve()
       })
+    } else if (options.project == true) {
+      getProjectsByUser(userId)
+        .then((projects) => selectProject(projects))
+        .then((project) => getInstancesByProject(project))
+        .then((instances) => {
+          showInstances(instances)
+          resolve()
+          })
     }
   })
 }
@@ -80,6 +91,21 @@ function checkRepo(owner, repo) {
     }
     github.checkRepo(options, function (repo) {
       resolve(repo)
+    })
+  })
+}
+
+function selectProject (projects) {
+  return new Promise ((resolve, reject) => {
+    let array = []
+    projects.forEach(project => {
+      if (project.full_name) {
+        array.push(project.full_name)
+        tmpProjects.set(project.full_name, project)
+      }
+    })
+    promptProjects(array, (data) => {
+      resolve(tmpProjects.get(data.project))
     })
   })
 }
@@ -136,6 +162,36 @@ function promptOrg(orgs, callback) {
   inquirer.prompt(questions).then(callback);
 }
 
+function promptProjects (projects, callback) {
+  var questions = [
+    {
+      name: 'project',
+      type: 'list',
+      message: 'Select a project',
+      choices: projects
+    }
+  ];
+  inquirer.prompt(questions).then(callback);
+}
+
+function getInstancesByProject (project) {
+  return new Promise ((resolve, reject) => {
+    var status = new Spinner('Geting instances ...');
+    status.start();
+    confStore.set(conf.LAST_ADDED_PROJECT, project.full_name)
+    awInstance.getInstancesByProject(project._id).then(res => {
+      if (res!= null) {
+        status.stop()
+        resolve(res.data.data.instances)
+      }
+    }).catch(err => {
+      console.error(err)
+      status.stop()
+      reject(err)
+    })
+  })
+}
+
 function getProjectsByUser (userId) {
   return new Promise ((resolve, reject) => {
     var status = new Spinner('Geting projects ...');
@@ -177,7 +233,7 @@ function addRepo (repo) {
 }
 
 function showProjects (projects) {
-  console.log(chalk.bold.yellow(confStore.get('login')) + chalk.yellow('\'' + ' Project list >'))
+  console.log('[' + chalk.bold.yellow(confStore.get('login')) + '] Project list >')
   projects.forEach((project, i) => {
     makeProjectFormat(project, i)
   })
@@ -189,4 +245,23 @@ function makeProjectFormat (project, index) {
 
 function showAddProjectDoneMsg (projectName, projectId) {
   console.log(chalk.bold.green(`${projectName}`) + ' is successfully added.')
+}
+
+function showInstances (instances) {
+  console.log('[' + chalk.bold.yellow(confStore.get(conf.LAST_ADDED_PROJECT)) + '] Run History >')
+  instances.forEach((instance, i) => {
+    makeInstanceFormat(instance, i)
+  })
+}
+
+function makeInstanceFormat (instance, index) {
+  let status
+  if (instance.status == "PASS") {
+    status = chalk.green(`${instance.status}  `)
+  } else if (instance.status == "FAIL") {
+    status = chalk.magenta(`${instance.status}  `)
+  } else if (instance.status == "BROKEN") {
+    status = chalk.red(`${instance.status}`)
+  }
+  console.log(index + '. ' + status + `:${instance._id}:`)
 }
