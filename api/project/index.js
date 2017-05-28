@@ -51,6 +51,17 @@ exports.add  = function (options) {
   })
 }
 
+exports.project = function (args, options) {
+  return new Promise ((resolve, reject) => {
+    if (args.projectName == null) {
+      let userId = conf.get('userId')
+      getProjectsByUser(userId).then((data) => {
+        showProjects(data)
+      })
+    }
+  })
+}
+
 function checkRepo(owner, repo) {
   return new Promise ((resolve, reject) => {
     let options = {
@@ -114,6 +125,23 @@ function promptOrg(orgs, callback) {
   inquirer.prompt(questions).then(callback);
 }
 
+function getProjectsByUser (userId) {
+  return new Promise ((resolve, reject) => {
+    var status = new Spinner('Geting projects ...');
+    status.start();
+    awProject.getProjectsByUser(userId).then(res => {
+      if (res!= null) {
+        status.stop()
+        resolve(res.data.data.projects)
+      }
+    }).catch(err => {
+      console.error(err)
+      status.stop()
+      reject(err)
+    })
+  })
+}
+
 function addRepo (repo) {
   var data = {
     name: repo.name,
@@ -132,4 +160,15 @@ function addRepo (repo) {
     console.error(err)
     reject(err)
   })
+}
+
+function showProjects (projects) {
+  console.log(chalk.bold.yellow(conf.get('login')) + chalk.yellow('\'' + ' Project list >'))
+  projects.forEach((project, i) => {
+    makeProjectFormat(project, i)
+  })
+}
+
+function makeProjectFormat (project, index) {
+  console.log(index + '. ' + chalk.green(`${project.full_name}`))
 }

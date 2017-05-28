@@ -72,6 +72,10 @@ Show all projects.
 ```shell
 $ apiway project
 ```
+Show run history of `projectName`
+```shell
+$ apiway project [projectName]
+```
 Show all projects with last status (Running/Pass/Fail/Broken)
 ```shell
 $ apiway project -s
