@@ -45,8 +45,7 @@ prog
       console.log(chalk.red('Need a owner name'));
       showHelp()
     }
-    awProject.add(options).then((repo) => {
-      console.log(chalk.green(`Successfully added ${repo}`));
+    awProject.add(options).then(() => {
     })
   })
 

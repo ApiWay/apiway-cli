@@ -234,7 +234,7 @@ exports.checkRepo = function (options, callback) {
     (err, res) => {
       status.stop()
       if (res.data.full_name == `${options.owner}/${options.repo}`) {
-        callback(res.data.full_name)
+        callback(res.data)
       }
   })
 }
