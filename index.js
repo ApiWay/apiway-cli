@@ -50,6 +50,14 @@ prog
     })
   })
 
+  // the project command
+  .command('project', "Project command for apiway.io")
+  .help('')
+  .option('-p, --project <projectName>', 'Project name')
+  .action((args, options, logger) => {
+    awProject.project(options)
+  })
+
   // the run command
   .command('run', "Project command for apiway.io")
   .help('')

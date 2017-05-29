@@ -40,6 +40,12 @@ exports.run = function (options) {
           showRunProjectResult(confStore.get(conf.LAST_RUN_PROJECT), instanceId)
           resolve()
           })
+    } else if (options.project != null) {
+        runProjectByName(options.project)
+        .then((instanceId) => {
+          showRunProjectResult(confStore.get(conf.LAST_RUN_PROJECT), instanceId)
+          resolve()
+        })
     }
   })
 }
@@ -150,6 +156,24 @@ function promptProjects (projects, callback) {
     }
   ];
   inquirer.prompt(questions).then(callback);
+}
+
+function runProjectByName (projectName) {
+  return new Promise ((resolve, reject) => {
+    var status = new Spinner('Running project ...');
+    status.start();
+    confStore.set(conf.LAST_RUN_PROJECT, projectName)
+    awInstance.addInstance({full_name: projectName}).then(res => {
+      if (res!= null) {
+        status.stop()
+        resolve(res.data.data.instanceId)
+      }
+    }).catch(err => {
+      console.error(err)
+      status.stop()
+      reject(err)
+    })
+  })
 }
 
 function runProject (project) {
