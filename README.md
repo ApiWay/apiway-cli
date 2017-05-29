@@ -1,6 +1,7 @@
 ![logo](https://github.com/ApiWay/apiway-design/blob/master/img/logo.png)
 # ApiWay: CLI
 Command Line Interface for apiway.io
+[![NPM](https://nodei.co/npm/apiway-cli.png)](https://nodei.co/npm/apiway-cli/)
 
 ## About ApiWay
 TC(Test Case)를 Cloud 상에서 정해진 스케줄에 따라 반복적으로 수행하여 결과를 알려주는 서비스입니다
