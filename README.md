@@ -1,5 +1,9 @@
 ![logo](https://github.com/ApiWay/apiway-design/blob/master/img/logo.png)
 # ApiWay: CLI
+[![npm version](https://badge.fury.io/js/apiway-cli.svg)](https://badge.fury.io/js/apiway-cli)
+
+[![NPM](https://nodei.co/npm/apiway-cli.png)](https://nodei.co/npm/apiway-cli/)
+
 Command Line Interface for apiway.io
 
 ## About ApiWay
