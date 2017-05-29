@@ -33,14 +33,31 @@ exports.run = function (options) {
         resolve()
       })
     } else if (options.project == true) {
-      // getProjectsByUser(userId)
-      //   .then((projects) => selectProject(projects))
-      //   .then((project) => getInstancesByProject(project))
-      //   .then((instances) => {
-      //     showInstances(instances)
-      //     resolve()
-      //     })
+      getProjectsByUser(userId)
+        .then((projects) => selectProject(projects))
+        .then((project) => runProject(project))
+        .then((instanceId) => {
+          showRunProjectResult(confStore.get(conf.LAST_RUN_PROJECT), instanceId)
+          resolve()
+          })
     }
+  })
+}
+
+function getProjectsByUser (userId) {
+  return new Promise ((resolve, reject) => {
+    var status = new Spinner('Geting projects ...');
+    status.start();
+    awProject.getProjectsByUser(userId).then(res => {
+      if (res!= null) {
+        status.stop()
+        resolve(res.data.data.projects)
+      }
+    }).catch(err => {
+      console.error(err)
+      status.stop()
+      reject(err)
+    })
   })
 }
 
@@ -135,6 +152,24 @@ function promptProjects (projects, callback) {
   inquirer.prompt(questions).then(callback);
 }
 
+function runProject (project) {
+  return new Promise ((resolve, reject) => {
+    var status = new Spinner('Running project ...');
+    status.start();
+    confStore.set(conf.LAST_RUN_PROJECT, project.full_name)
+    awInstance.addInstance({projectId: project._id}).then(res => {
+      if (res!= null) {
+        status.stop()
+        resolve(res.data.data.instanceId)
+      }
+    }).catch(err => {
+      console.error(err)
+      status.stop()
+      reject(err)
+    })
+  })
+}
+
 function getInstancesByProject (project) {
   return new Promise ((resolve, reject) => {
     var status = new Spinner('Geting instances ...');
@@ -227,4 +262,8 @@ function makeInstanceFormat (instance, index) {
     status = chalk.green(`${instance.status}`)
   }
   console.log(index + '. ' + status + `:${instance._id}:`)
+}
+
+function showRunProjectResult (projectName, instanceId) {
+  console.log(chalk.bold.green(`${projectName}`) + ' is successfully started.(InstanceID:' + chalk.blue(`${instanceId}`) + ')')
 }
