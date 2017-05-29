@@ -55,7 +55,7 @@ $ apiway add -r repo -o owner
 ### Run
 : Command to run a project
 
-Dialog mode
+Show all running projects
 ```shell
 $ apiway run 
 ```
@@ -63,7 +63,7 @@ You can specify a project name
 ```shell
 $ apiway run -p project
 ```
-Show running projects
+
 ```shell
 $ apiway run -l
 ```

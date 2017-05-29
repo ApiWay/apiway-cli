@@ -7,6 +7,7 @@ var figlet      = require('figlet');
 var packageInfo = require('./package.json');
 var awUser = require('./api/user');
 var awProject = require('./api/project');
+var awInstance = require('./api/instance');
 var util = require('./util');
 
 util.clear()
@@ -49,12 +50,12 @@ prog
     })
   })
 
-  // the project command
-  .command('project', "Project command for apiway.io")
+  // the run command
+  .command('run', "Project command for apiway.io")
   .help('')
   .option('-p, --project <projectName>', 'Project name')
   .action((args, options, logger) => {
-    awProject.project(options)
+    awInstance.run(options)
   })
 
 prog.parse(process.argv);
