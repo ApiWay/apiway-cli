@@ -1,6 +1,7 @@
 ![logo](https://github.com/ApiWay/apiway-design/blob/master/img/logo.png)
 # ApiWay: CLI
 [![npm version](https://badge.fury.io/js/apiway-cli.svg)](https://badge.fury.io/js/apiway-cli)
+<a href="https://gitter.im/ApiWay/apiway-cli?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img src="https://badges.gitter.im/Join Chat.svg" alt="Gitter chat" height="18"></a>
 
 [![NPM](https://nodei.co/npm/apiway-cli.png)](https://nodei.co/npm/apiway-cli/)
 
