@@ -248,7 +248,7 @@ exports.getRepos = function (login, callback) {
   });
 
   if (login == conf.get('login')) {
-    github.repos.getAll({type:'owner'}, (err, res) => {
+    github.repos.getAll({type:'owner', per_page:300}, (err, res) => {
       status.stop()
       callback(res.data)
     })
