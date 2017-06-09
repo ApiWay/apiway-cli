@@ -4,6 +4,7 @@
 const prog = require('caporal');
 var chalk       = require('chalk');
 var figlet      = require('figlet');
+// var _           = require('lodash');
 var packageInfo = require('./package.json');
 var awUser = require('./api/user');
 var awProject = require('./api/project');
@@ -61,8 +62,12 @@ prog
   // the run command
   .command('run', "Project command for apiway.io")
   .help('')
-  .option('-p, --project <projectName>', 'Project name')
+  .option('-p, --project <projectFullName>', 'Project name (ex. bluehackmaster/apiway-cli')
+  .option('-l, --list', 'Show run history')
   .action((args, options, logger) => {
+    if (!options.project && !options.list) {
+      showHelp()
+    }
     awInstance.run(options)
   })
 
@@ -76,3 +81,4 @@ function showHelp() {
   argv[3] = '-h'
   prog.parse(argv)
 }
+
