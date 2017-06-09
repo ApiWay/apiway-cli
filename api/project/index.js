@@ -66,19 +66,23 @@ exports.add  = function (options) {
 exports.project = function (options) {
   return new Promise ((resolve, reject) => {
     let userId = confStore.get('userId')
-    if (!options.project) {
-      getProjectsByUser(userId).then((data) => {
-        showProjects(data)
-        resolve()
-      })
-    } else if (options.project == true) {
+    if (options.list == true) {
       getProjectsByUser(userId)
-        .then((projects) => selectProject(projects))
-        .then((project) => getInstancesByProject(project))
-        .then((instances) => {
-          showInstances(instances)
+        .then((projects) => {
+          showProjects(projects)
           resolve()
           })
+    } else if (options.delete == true) {
+      getProjectsByUser(userId)
+        .then((projects) => selectProject(projects))
+        .then((project) => deleteProjectByProjectId(project._id))
+        .then(() => resolve())
+    } else if (options.delete != null) {
+      deleteProjectByProjectId(options.delete)
+    } else if (options.when == true || options.time == true) {
+      reject()
+    } else if (options.when && options.projectId) {
+      updateSchedule(options.projectId, options.when)
     }
   })
 }
@@ -232,6 +236,36 @@ function addRepo (repo) {
   })
 }
 
+function updateSchedule (projectId, schedule) {
+  return new Promise ((resolve, reject) => {
+    var data = {
+      schedule: schedule
+    }
+    awProject.updateProject(projectId, data).then(res => {
+      if (res != null) {
+        resolve(res.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      confStore.delete(conf.LAST_ADDED_PROJECT)
+      reject(err)
+    })
+  })
+}
+
+function deleteProjectByProjectId (projectId) {
+  return new Promise ((resolve, reject) => {
+    awProject.deleteProject(projectId).then(res => {
+      if (res != null) {
+        resolve()
+      }
+    }).catch(err => {
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
 function showProjects (projects) {
   console.log('[' + chalk.bold.yellow(confStore.get('login')) + '] Project list >')
   projects.forEach((project, i) => {
@@ -240,7 +274,8 @@ function showProjects (projects) {
 }
 
 function makeProjectFormat (project, index) {
-  console.log(index + '. ' + chalk.green(`${project.full_name}`))
+  let split = chalk.blue('|')
+  console.log(index + '. ' + chalk.green(`${project.full_name}`) + `${split}ID:${project._id}`)
 }
 
 function showAddProjectDoneMsg (projectName, projectId) {

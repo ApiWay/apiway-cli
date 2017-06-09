@@ -54,9 +54,22 @@ prog
   // the project command
   .command('project', "Project command for apiway.io")
   .help('')
-  .option('-p, --project <projectName>', 'Project name')
+  .option('-l, --list', 'Show project list')
+  .option('-t, --time <time>', 'Update schedule. Every time (e.g. 1h, 4h, 1d, 2d)  (require -u)')
+  .option('-w, --when <when>', 'Update schedule. When time is (e.g. 45m = 01:45, 02:45, 03:45)  (require -u)')
+  .option('-d, --delete <projectId>', 'Delete a project with projectId')
+  .option('-p, --projectId <projectId>', 'Specify a projectID')
   .action((args, options, logger) => {
-    awProject.project(options)
+    if (!options.list && !options.delete && !options.update
+        && !options.projectId
+        && !options.when && !options.time) {
+      showHelp()
+    }
+    awProject.project(options).then((err, res) => {
+      if (err) {
+        showHelp(err)
+      }
+    })
   })
 
   // the run command
