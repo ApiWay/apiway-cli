@@ -66,19 +66,16 @@ exports.add  = function (options) {
 exports.project = function (options) {
   return new Promise ((resolve, reject) => {
     let userId = confStore.get('userId')
-    if (!options.project) {
-      getProjectsByUser(userId).then((data) => {
-        showProjects(data)
-        resolve()
-      })
-    } else if (options.project == true) {
+    if (options.list == true) {
       getProjectsByUser(userId)
-        .then((projects) => selectProject(projects))
-        .then((project) => getInstancesByProject(project))
-        .then((instances) => {
-          showInstances(instances)
+        .then((projects) => {
+          showProjects(projects)
           resolve()
           })
+    } else if (options.delete == null && options.delete == true) {
+      console.log(options)
+    } else if (options.delete != null) {
+      deleteProjectByProjectId(options.delete)
     }
   })
 }
@@ -232,6 +229,19 @@ function addRepo (repo) {
   })
 }
 
+function deleteProjectByProjectId (projectId) {
+  return new Promise ((resolve, reject) => {
+    awProject.deleteProject(projectId).then(res => {
+      if (res != null) {
+        resolve()
+      }
+    }).catch(err => {
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
 function showProjects (projects) {
   console.log('[' + chalk.bold.yellow(confStore.get('login')) + '] Project list >')
   projects.forEach((project, i) => {
@@ -240,7 +250,8 @@ function showProjects (projects) {
 }
 
 function makeProjectFormat (project, index) {
-  console.log(index + '. ' + chalk.green(`${project.full_name}`))
+  let split = chalk.blue('|')
+  console.log(index + '. ' + chalk.green(`${project.full_name}`) + `${split}ID:${project._id}`)
 }
 
 function showAddProjectDoneMsg (projectName, projectId) {

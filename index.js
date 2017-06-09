@@ -54,8 +54,12 @@ prog
   // the project command
   .command('project', "Project command for apiway.io")
   .help('')
-  .option('-p, --project <projectName>', 'Project name')
+  .option('-l, --list', 'Show project list')
+  .option('-d, --delete <projectId>', 'Delete a project with projectId')
   .action((args, options, logger) => {
+    if (!options.list && !options.delete) {
+      showHelp()
+    }
     awProject.project(options)
   })
 
