@@ -27,7 +27,7 @@ var tmpProjects = new Map();
 exports.run = function (options) {
   return new Promise ((resolve, reject) => {
     let userId = confStore.get('userId')
-    if (!options.project) {
+    if (options.list) {
       getInstancesByUser(userId).then((data) => {
         showInstancesByUser(data, userId)
         resolve()
@@ -46,6 +46,8 @@ exports.run = function (options) {
           showRunProjectResult(confStore.get(conf.LAST_RUN_PROJECT), instanceId)
           resolve()
         })
+    } else {
+      console
     }
   })
 }
@@ -285,7 +287,9 @@ function makeInstanceFormat (instance, index) {
   } else if (instance.status == "RUNNING") {
     status = chalk.green(`${instance.status}`)
   }
-  console.log(index + '. ' + status + `:${instance._id}:`)
+
+  let split = chalk.blue('|')
+  console.log(`${index}. ${status}${split}${instance.project.full_name}${split}id:${instance._id}${split}report:${instance.reportHtml}`)
 }
 
 function showRunProjectResult (projectName, instanceId) {
