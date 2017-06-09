@@ -72,10 +72,17 @@ exports.project = function (options) {
           showProjects(projects)
           resolve()
           })
-    } else if (options.delete == null && options.delete == true) {
-      console.log(options)
+    } else if (options.delete == true) {
+      getProjectsByUser(userId)
+        .then((projects) => selectProject(projects))
+        .then((project) => deleteProjectByProjectId(project._id))
+        .then(() => resolve())
     } else if (options.delete != null) {
       deleteProjectByProjectId(options.delete)
+    } else if (options.when == true || options.time == true) {
+      reject()
+    } else if (options.when && options.projectId) {
+      updateSchedule(options.projectId, options.when)
     }
   })
 }
@@ -220,6 +227,23 @@ function addRepo (repo) {
     awProject.addProject(data).then(res => {
       if (res != null) {
         resolve(res.data.projectId)
+      }
+    }).catch(err => {
+      console.error(err)
+      confStore.delete(conf.LAST_ADDED_PROJECT)
+      reject(err)
+    })
+  })
+}
+
+function updateSchedule (projectId, schedule) {
+  return new Promise ((resolve, reject) => {
+    var data = {
+      schedule: schedule
+    }
+    awProject.updateProject(projectId, data).then(res => {
+      if (res != null) {
+        resolve(res.data)
       }
     }).catch(err => {
       console.error(err)
