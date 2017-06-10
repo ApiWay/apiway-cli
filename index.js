@@ -55,20 +55,30 @@ prog
   .command('project', "Project command for apiway.io")
   .help('')
   .option('-l, --list', 'Show project list')
-  .option('-t, --time <time>', 'Update schedule. Every time (e.g. 1h, 4h, 1d, 2d)  (require -u)')
-  .option('-w, --when <when>', 'Update schedule. When time is (e.g. 45m = 01:45, 02:45, 03:45)  (require -u)')
+  .option('-t, --interval <interval>',
+    'Set schedule with interval time \n' +
+    '  e.g. 1h, 4h, 1d, 2d \n' +
+    'Range: 1h~24h, 1d~31d')
+  .option('-w, --when <when>',
+    'Set schedule with time \n' +
+    '  e.g. 45m = 01:45, 02:45, ... , 24:45 \n' +
+    '       13h = 13:00 Sun, 13:00 Mon, ... , 13:00 Sat)  \n' +
+    'Range: 1m ~ 59m, 1h~24h')
+  .option('-c, --cron <cron>',
+    'Set schedule with cron expression\n' +
+    '  e.g. * */1 * * * = 01:00, 02:00 ... every hour \n' +
+    '       * * */3 * * = every three days  \n')
   .option('-d, --delete <projectId>', 'Delete a project with projectId')
   .option('-p, --projectId <projectId>', 'Specify a projectID')
   .action((args, options, logger) => {
-    if (!options.list && !options.delete && !options.update
+    if (!options.list && !options.delete
         && !options.projectId
-        && !options.when && !options.time) {
+        && !options.when && !options.interval && !options.cron) {
       showHelp()
     }
-    awProject.project(options).then((err, res) => {
-      if (err) {
-        showHelp(err)
-      }
+    awProject.project(options).then((res) => {
+    }, (err) => {
+      showHelp(err)
     })
   })
 
@@ -81,12 +91,18 @@ prog
     if (!options.project && !options.list) {
       showHelp()
     }
-    awInstance.run(options)
+    awInstance.run(options).then((res) => {
+    }, (err) => {
+      showHelp(err)
+    })
   })
 
 prog.parse(process.argv);
 
-function showHelp() {
+function showHelp(err) {
+  if (err) {
+    console.log(chalk.red(err));
+  }
   let argv = []
   process.argv.forEach(arg => {
     argv.push(arg)
