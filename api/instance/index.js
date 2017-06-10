@@ -36,14 +36,14 @@ exports.run = function (options) {
       getProjectsByUser(userId)
         .then((projects) => selectProject(projects))
         .then((project) => runProject(project))
-        .then((instanceId) => {
-          showRunProjectResult(confStore.get(conf.LAST_RUN_PROJECT), instanceId)
+        .then((instance) => {
+          showRunProjectResult(instance)
           resolve()
           })
     } else if (options.project != null) {
         runProjectByName(options.project)
-        .then((instanceId) => {
-          showRunProjectResult(confStore.get(conf.LAST_RUN_PROJECT), instanceId)
+        .then((instance) => {
+          showRunProjectResult(instance)
           resolve()
         })
     } else {
@@ -168,7 +168,7 @@ function runProjectByName (projectName) {
     awInstance.addInstance({full_name: projectName}).then(res => {
       if (res!= null) {
         status.stop()
-        resolve(res.data.data.instanceId)
+        resolve(res.data.data)
       }
     }).catch(err => {
       console.error(err)
@@ -186,7 +186,7 @@ function runProject (project) {
     awInstance.addInstance({projectId: project._id}).then(res => {
       if (res!= null) {
         status.stop()
-        resolve(res.data.data.instanceId)
+        resolve(res.data.data)
       }
     }).catch(err => {
       console.error(err)
@@ -292,6 +292,6 @@ function makeInstanceFormat (instance, index) {
   console.log(`${index}. ${status}${split}${instance.project.full_name}${split}id:${instance._id}${split}report:${instance.reportHtml}`)
 }
 
-function showRunProjectResult (projectName, instanceId) {
-  console.log(chalk.bold.green(`${projectName}`) + ' is successfully started.(InstanceID:' + chalk.blue(`${instanceId}`) + ')')
+function showRunProjectResult (instance) {
+  console.log(chalk.bold.green(`${instance.project.full_name}`) + ' is successfully started.(InstanceID:' + chalk.blue(`${instance._id}`) + ')')
 }
