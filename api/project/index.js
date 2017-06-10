@@ -79,10 +79,38 @@ exports.project = function (options) {
         .then(() => resolve())
     } else if (options.delete != null) {
       deleteProjectByProjectId(options.delete)
-    } else if (options.when == true || options.time == true) {
-      reject()
-    } else if (options.when && options.projectId) {
-      updateSchedule(options.projectId, options.when)
+    } else if (options.when == true || options.interval == true || options.cron == true) {
+      reject('Please input time')
+    } else if (options.when != null) {
+      if (options.projectId != null) {
+        updateScheduleWhen(options.projectId, options.when)
+          .then(() => resolve())
+      } else {
+        getProjectsByUser(userId)
+          .then((projects) => selectProject(projects))
+          .then((project) => updateScheduleWhen(project._id, options.when))
+          .then(() => resolve())
+      }
+    } else if (options.interval != null) {
+      if (options.projectId != null) {
+        updateScheduleInterval(options.projectId, options.interval)
+          .then(() => resolve())
+      } else {
+        getProjectsByUser(userId)
+          .then((projects) => selectProject(projects))
+          .then((project) => updateScheduleInterval(project._id, options.interval))
+          .then(() => resolve())
+      }
+    } else if (options.cron != null) {
+      if (options.projectId != null) {
+        updateScheduleCron(options.projectId, options.interval)
+          .then(() => resolve())
+      } else {
+        getProjectsByUser(userId)
+          .then((projects) => selectProject(projects))
+          .then((project) => updateScheduleCron(project._id, options.interval))
+          .then(() => resolve())
+      }
     }
   })
 }
@@ -236,18 +264,43 @@ function addRepo (repo) {
   })
 }
 
-function updateSchedule (projectId, schedule) {
+function updateScheduleCron (projectId, cron) {
   return new Promise ((resolve, reject) => {
-    var data = {
-      schedule: schedule
-    }
-    awProject.updateProject(projectId, data).then(res => {
+    console.log(cron)
+    awProject.updateScheduleCron(projectId, cron).then(res => {
       if (res != null) {
         resolve(res.data)
       }
     }).catch(err => {
       console.error(err)
-      confStore.delete(conf.LAST_ADDED_PROJECT)
+      reject(err)
+    })
+  })
+}
+
+function updateScheduleInterval (projectId, interval) {
+  return new Promise ((resolve, reject) => {
+    console.log(interval)
+    awProject.updateScheduleInterval(projectId, interval).then(res => {
+      if (res != null) {
+        resolve(res.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
+function updateScheduleWhen (projectId, when) {
+  return new Promise ((resolve, reject) => {
+    console.log(when)
+    awProject.updateScheduleWhen(projectId, when).then(res => {
+      if (res != null) {
+        resolve(res.data)
+      }
+    }).catch(err => {
+      console.error(err)
       reject(err)
     })
   })
