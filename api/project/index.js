@@ -72,6 +72,17 @@ exports.project = function (options) {
           showProjects(projects)
           resolve()
           })
+    } else if (!options.list && !options.interval && !options.when && !options.cron && !options.delete) {
+      if (options.projectId == true) {
+        getProjectsByUser(userId)
+          .then((projects) => selectProject(projects))
+          .then((project) => showProjectInfo(project))
+          .then(() => resolve())
+      } else if (options.projectId != null) {
+        getProject(options.projectId)
+          .then((project) => showProjectInfo(project))
+          .then(() => resolve())
+      }
     } else if (options.delete == true) {
       getProjectsByUser(userId)
         .then((projects) => selectProject(projects))
@@ -224,6 +235,23 @@ function getInstancesByProject (project) {
   })
 }
 
+function getProject (projectId) {
+  return new Promise ((resolve, reject) => {
+    var status = new Spinner('Geting project ...');
+    status.start();
+    awProject.getProject(projectId).then(res => {
+      if (res!= null) {
+        status.stop()
+        resolve(res.data.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      status.stop()
+      reject(err)
+    })
+  })
+}
+
 function getProjectsByUser (userId) {
   return new Promise ((resolve, reject) => {
     var status = new Spinner('Geting projects ...');
@@ -319,6 +347,11 @@ function deleteProjectByProjectId (projectId) {
   })
 }
 
+function showProjectInfo (project) {
+  console.log('Project Information >>')
+  makeProjectInfoFormat(project)
+}
+
 function showProjects (projects) {
   console.log('[' + chalk.bold.yellow(confStore.get('login')) + '] Project list >')
   projects.forEach((project, i) => {
@@ -329,6 +362,12 @@ function showProjects (projects) {
 function makeProjectFormat (project, index) {
   let split = chalk.blue('|')
   console.log(index + '. ' + chalk.green(`${project.full_name}`) + `${split}ID:${project._id}`)
+}
+
+function makeProjectInfoFormat (project) {
+  Object.keys(project).map(function(key, index) {
+    console.log(chalk.blue(`${key}`) + `:${project[key]}`)
+  });
 }
 
 function showAddProjectDoneMsg (projectName, projectId) {
@@ -353,3 +392,4 @@ function makeInstanceFormat (instance, index) {
   }
   console.log(index + '. ' + status + `:${instance._id}:`)
 }
+
