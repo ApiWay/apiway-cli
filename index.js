@@ -69,10 +69,12 @@ prog
     '  e.g. * */1 * * * = 01:00, 02:00 ... every hour \n' +
     '       * * */3 * * = every three days  \n')
   .option('-d, --delete <projectId>', 'Delete a project with projectId')
+  .option('-b, --branch <branch>', 'Change branch')
   .option('-p, --projectId <projectId>', 'Specify a projectID')
   .action((args, options, logger) => {
     if (!options.list && !options.delete
         && !options.projectId
+        && !options.branch
         && !options.when && !options.interval && !options.cron) {
       showHelp()
     }

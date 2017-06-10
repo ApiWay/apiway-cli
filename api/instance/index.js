@@ -54,7 +54,7 @@ exports.run = function (options) {
 
 function getProjectsByUser (userId) {
   return new Promise ((resolve, reject) => {
-    var status = new Spinner('Geting projects ...');
+    var status = new Spinner('Getting projects ...');
     status.start();
     awProject.getProjectsByUser(userId).then(res => {
       if (res!= null) {
@@ -198,7 +198,7 @@ function runProject (project) {
 
 function getInstancesByProject (project) {
   return new Promise ((resolve, reject) => {
-    var status = new Spinner('Geting instances ...');
+    var status = new Spinner('Getting instances ...');
     status.start();
     confStore.set(conf.LAST_ADDED_PROJECT, project.full_name)
     awInstance.getInstancesByProject(project._id).then(res => {
@@ -216,7 +216,7 @@ function getInstancesByProject (project) {
 
 function getInstancesByUser (userId) {
   return new Promise ((resolve, reject) => {
-    var status = new Spinner('Geting instances ...');
+    var status = new Spinner('Getting instances ...');
     status.start();
     awInstance.getInstancesByUser(userId).then(res => {
       if (res!= null) {

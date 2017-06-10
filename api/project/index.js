@@ -72,7 +72,9 @@ exports.project = function (options) {
           showProjects(projects)
           resolve()
           })
-    } else if (!options.list && !options.interval && !options.when && !options.cron && !options.delete) {
+    } else if (!options.list && !options.interval && !options.when
+      && !options.cron && !options.delete
+      && !options.branch) {
       if (options.projectId == true) {
         getProjectsByUser(userId)
           .then((projects) => selectProject(projects))
@@ -80,6 +82,20 @@ exports.project = function (options) {
           .then(() => resolve())
       } else if (options.projectId != null) {
         getProject(options.projectId)
+          .then((project) => showProjectInfo(project))
+          .then(() => resolve())
+      }
+    } else if (options.branch == true) {
+      reject('Error : -d <branch> | Need a branch name')
+    } else if (options.branch != null) {
+      if (options.projectId != null) {
+        updateBranch(options.projectId, options.branch)
+          .then((project) => showProjectInfo(project))
+          .then(() => resolve())
+      } else {
+        getProjectsByUser(userId)
+          .then((projects) => selectProject(projects))
+          .then((project) => updateBranch(project._id, options.branch))
           .then((project) => showProjectInfo(project))
           .then(() => resolve())
       }
@@ -277,6 +293,7 @@ function addRepo (repo) {
       owner: confStore.get('userId'),
       html_url: repo.html_url,
       git_url: repo.git_url,
+      default_branch: repo.default_branch,
       provider: "github"
     }
     confStore.set(conf.LAST_ADDED_PROJECT, repo.full_name)
@@ -334,6 +351,23 @@ function updateScheduleWhen (projectId, when) {
   })
 }
 
+function updateBranch (projectId, branch) {
+  return new Promise ((resolve, reject) => {
+    let data = {
+      default_branch: branch
+    }
+    awProject.updateProject(projectId, data).then(res => {
+      if (res != null) {
+        console.log(chalk.bold.green(`${res.data.data.full_name}`) + ' is successfully updated as follow.')
+        resolve(res.data.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
 function deleteProjectByProjectId (projectId) {
   return new Promise ((resolve, reject) => {
     awProject.deleteProject(projectId).then(res => {
@@ -348,7 +382,7 @@ function deleteProjectByProjectId (projectId) {
 }
 
 function showProjectInfo (project) {
-  console.log('Project Information >>')
+  console.log('= Project Information =')
   makeProjectInfoFormat(project)
 }
 
