@@ -434,7 +434,7 @@ function makeProjectFormat (project, index) {
 }
 
 function makeProjectInfoFormat (project) {
-  Object.keys(project).map(function(key, index) {
+  Object.keys(project).map(function(key ) {
     console.log(chalk.blue(`${key}`) + `:${project[key]}`)
   });
 }

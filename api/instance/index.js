@@ -23,6 +23,7 @@ const conf = require('../../util/config')
 const confStore = new Configstore(pkg.name, {foo: 'bar'});
 var repos = new Map();
 var tmpProjects = new Map();
+var tmpInstances = new Map();
 
 exports.run = function (options) {
   return new Promise ((resolve, reject) => {
@@ -32,22 +33,40 @@ exports.run = function (options) {
         showInstancesByUser(data, userId)
         resolve()
       })
-    } else if (options.project == true) {
-      getProjectsByUser(userId)
-        .then((projects) => selectProject(projects))
-        .then((project) => runProject(project))
-        .then((instance) => {
-          showRunProjectResult(instance)
-          resolve()
+    } else if (options.project) {
+
+      if (options.project == true) {
+        getProjectsByUser(userId)
+          .then((projects) => selectProject(projects))
+          .then((project) => runProject(project))
+          .then((instance) => {
+            showRunProjectResult(instance)
+            resolve()
           })
-    } else if (options.project != null) {
+      } else if (options.project != null) {
         runProjectByName(options.project)
-        .then((instance) => {
-          showRunProjectResult(instance)
-          resolve()
-        })
-    } else {
-      console
+          .then((instance) => {
+            showRunProjectResult(instance)
+            resolve()
+          })
+      }
+    } else if (options.instanceId) {
+      if (options.instanceId == true) {
+        getProjectsByUser(userId)
+          .then((projects) => selectProject(projects))
+          .then((project) => getInstancesByProject(project))
+          .then((instances) => selectInstance(instances))
+          .then((instance) => showInstanceInfo(instance))
+          .then((instance) => {
+            resolve()
+          })
+      } else if (options.instanceId != null) {
+        getInstance(options.instanceId)
+          .then((instance) => showInstanceInfo(instance))
+          .then((instance) => {
+            resolve()
+          })
+      }
     }
   })
 }
@@ -92,6 +111,21 @@ function selectProject (projects) {
     })
     promptProjects(array, (data) => {
       resolve(tmpProjects.get(data.project))
+    })
+  })
+}
+
+function selectInstance (instances) {
+  return new Promise ((resolve, reject) => {
+    let array = []
+    instances.forEach(instance => {
+      if (instance._id) {
+        array.push(instance._id)
+        tmpInstances.set(instance._id, instance)
+      }
+    })
+    promptInstances(array, (data) => {
+      resolve(tmpInstances.get(data.instance))
     })
   })
 }
@@ -155,6 +189,18 @@ function promptProjects (projects, callback) {
       type: 'list',
       message: 'Select a project',
       choices: projects
+    }
+  ];
+  inquirer.prompt(questions).then(callback);
+}
+
+function promptInstances (instances, callback) {
+  var questions = [
+    {
+      name: 'instance',
+      type: 'list',
+      message: 'Select a instance',
+      choices: instances
     }
   ];
   inquirer.prompt(questions).then(callback);
@@ -252,6 +298,35 @@ function addRepo (repo) {
       reject(err)
     })
   })
+}
+
+function getInstance (instanceId) {
+  return new Promise ((resolve, reject) => {
+    var status = new Spinner('Getting instance ...');
+    status.start();
+    awInstance.getInstance(instanceId).then(res => {
+      if (res!= null) {
+        status.stop()
+        resolve(res.data.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      status.stop()
+      reject(err)
+    })
+  })
+}
+
+function showInstanceInfo (instance) {
+  console.log(chalk.bold.yellow('Instance Information : '))
+  makeInstanceInfoFormat(instance)
+}
+
+function makeInstanceInfoFormat (instance) {
+  console.log(instance)
+  // Object.keys(instance).map(function(key) {
+  //   console.log(chalk.blue(`${key}`) + `:${instance[key]}`)
+  // });
 }
 
 function showProjects (projects) {
