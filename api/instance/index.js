@@ -29,10 +29,13 @@ exports.run = function (options) {
   return new Promise ((resolve, reject) => {
     let userId = confStore.get('userId')
     if (options.list) {
-      getInstancesByUser(userId).then((data) => {
-        showInstancesByUser(data, userId)
-        resolve()
-      })
+      getProjectsByUser(userId)
+        .then((projects) => selectProject(projects))
+        .then((project) => getInstancesByProject(project))
+        .then((instance) => {
+          showInstances(instance)
+          resolve()
+        })
     } else if (options.project) {
 
       if (options.project == true) {
@@ -110,7 +113,9 @@ function selectProject (projects) {
       }
     })
     promptProjects(array, (data) => {
-      resolve(tmpProjects.get(data.project))
+      let prj = tmpProjects.get(data.project)
+      confStore.set(conf.LAST_SELECTED_PROJECT, prj)
+      resolve(prj)
     })
   })
 }
@@ -246,11 +251,13 @@ function getInstancesByProject (project) {
   return new Promise ((resolve, reject) => {
     var status = new Spinner('Getting instances ...');
     status.start();
-    confStore.set(conf.LAST_ADDED_PROJECT, project.full_name)
-    awInstance.getInstancesByProject(project._id).then(res => {
+    let options = {
+      per_page: 100
+    }
+    awInstance.getInstancesByProject(project._id, options).then(res => {
       if (res!= null) {
         status.stop()
-        resolve(res.data.data.instances)
+        resolve(res.data.data)
       }
     }).catch(err => {
       console.error(err)
@@ -264,7 +271,10 @@ function getInstancesByUser (userId) {
   return new Promise ((resolve, reject) => {
     var status = new Spinner('Getting instances ...');
     status.start();
-    awInstance.getInstancesByUser(userId).then(res => {
+    let options = {
+      per_page: 1
+    }
+    awInstance.getInstancesByUser(userId, options).then(res => {
       if (res!= null) {
         status.stop()
         resolve(res.data.data.instances)
@@ -344,19 +354,21 @@ function showAddProjectDoneMsg (projectName, projectId) {
   console.log(chalk.bold.green(`${projectName}`) + ' is successfully added.')
 }
 
-function showInstancesByUser (instances, userId) {
-  console.log('[' + chalk.bold.yellow(confStore.get(conf.LOGIN)) + '] Run History >')
+function showInstances (instances) {
+  console.log('[' + chalk.bold.yellow(confStore.get(conf.LAST_SELECTED_PROJECT)) + '] Run History >')
   instances.forEach((instance, i) => {
     makeInstanceFormat(instance, i)
   })
+  console.log('\nIf you want to show an information detail of Instance, use -i options')
+  console.log(chalk.green('$ apiway run -i <instanceId>'))
 }
 
 function makeInstanceFormat (instance, index) {
   let status
   if (instance.status == "PASS") {
-    status = chalk.blue(`${instance.status}  `)
+    status = chalk.blue(` ${instance.status} `)
   } else if (instance.status == "FAIL") {
-    status = chalk.magenta(`${instance.status}  `)
+    status = chalk.magenta(` ${instance.status} `)
   } else if (instance.status == "BROKEN") {
     status = chalk.red(`${instance.status}`)
   } else if (instance.status == "RUNNING") {
@@ -364,7 +376,7 @@ function makeInstanceFormat (instance, index) {
   }
 
   let split = chalk.blue('|')
-  console.log(`${index}. ${status}${split}${instance.project.full_name}${split}id:${instance._id}${split}report:${instance.reportHtml}`)
+  console.log(`${index}. InstanceId:` + chalk.green(`${instance._id}`) + `${split}${status}${split}${instance.project.full_name}${split}`)
 }
 
 function showRunProjectResult (instance) {

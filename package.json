@@ -1,6 +1,6 @@
 {
   "name": "apiway-cli",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "CLI for apiway.io",
   "main": "index.js",
   "directories": {
