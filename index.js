@@ -54,27 +54,31 @@ prog
   // the project command
   .command('project', "Project command for apiway.io")
   .help('')
+  .option('-p, --projectId <projectId>', 'Specify a projectID')
   .option('-l, --list', 'Show project list')
+  .option('-s, --subscriber <subscriber>',
+    'Set subscriber email to notify test result \n' +
+    '  (e.g.) -s aaa@gmail.com,bbb@emil.com')
   .option('-t, --interval <interval>',
     'Set schedule with interval time \n' +
-    '  e.g. 1h, 4h, 1d, 2d \n' +
+    '  (e.g.) 1h, 4h, 1d, 2d \n' +
     'Range: 1h~24h, 1d~31d')
   .option('-w, --when <when>',
     'Set schedule with time \n' +
-    '  e.g. 45m = 01:45, 02:45, ... , 24:45 \n' +
-    '       13h = 13:00 Sun, 13:00 Mon, ... , 13:00 Sat)  \n' +
+    '  (e.g.) 45m = 01:45, 02:45, ... , 24:45 \n' +
+    '         13h = 13:00 Sun, 13:00 Mon, ... , 13:00 Sat)  \n' +
     'Range: 1m ~ 59m, 1h~24h')
   .option('-c, --cron <cron>',
     'Set schedule with cron expression\n' +
-    '  e.g. * */1 * * * = 01:00, 02:00 ... every hour \n' +
-    '       * * */3 * * = every three days  \n')
+    '  (e.g.) * */1 * * * = 01:00, 02:00 ... every hour \n' +
+    '         * * */3 * * = every three days  \n')
   .option('-d, --delete <projectId>', 'Delete a project with projectId')
   .option('-b, --branch <branch>', 'Change branch')
-  .option('-p, --projectId <projectId>', 'Specify a projectID')
   .action((args, options, logger) => {
     if (!options.list && !options.delete
         && !options.projectId
         && !options.branch
+        && !options.subscriber
         && !options.when && !options.interval && !options.cron) {
       showHelp()
     }

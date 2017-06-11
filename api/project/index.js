@@ -72,16 +72,17 @@ exports.project = function (options) {
           showProjects(projects)
           resolve()
           })
-    } else if (!options.list && !options.interval && !options.when
-      && !options.cron && !options.delete
-      && !options.branch) {
+    } else if (options.subscriber == true) {
+      reject('Error : -s <subscriber> | Need subscriber emails')
+    } else if (options.subscriber != null) {
       if (options.projectId == true) {
         getProjectsByUser(userId)
           .then((projects) => selectProject(projects))
+          .then((project) => updateSubscriber(project._id, options.subscriber))
           .then((project) => showProjectInfo(project))
           .then(() => resolve())
       } else if (options.projectId != null) {
-        getProject(options.projectId)
+        updateSubscriber(options.projectId, options.subscriber)
           .then((project) => showProjectInfo(project))
           .then(() => resolve())
       }
@@ -107,25 +108,29 @@ exports.project = function (options) {
     } else if (options.delete != null) {
       deleteProjectByProjectId(options.delete)
     } else if (options.when == true || options.interval == true || options.cron == true) {
-      reject('Please input time')
+      reject('Error : Please input time')
     } else if (options.when != null) {
-      if (options.projectId != null) {
-        updateScheduleWhen(options.projectId, options.when)
-          .then(() => resolve())
-      } else {
+      if (options.projectId == true) {
         getProjectsByUser(userId)
           .then((projects) => selectProject(projects))
           .then((project) => updateScheduleWhen(project._id, options.when))
+          .then((project) => showProjectInfo(project))
+          .then(() => resolve())
+      } else if (options.projectId != null) {
+        updateScheduleWhen(options.projectId, options.when)
+          .then((project) => showProjectInfo(project))
           .then(() => resolve())
       }
     } else if (options.interval != null) {
-      if (options.projectId != null) {
-        updateScheduleInterval(options.projectId, options.interval)
-          .then(() => resolve())
-      } else {
+      if (options.projectId == true) {
         getProjectsByUser(userId)
           .then((projects) => selectProject(projects))
           .then((project) => updateScheduleInterval(project._id, options.interval))
+          .then((project) => showProjectInfo(project))
+          .then(() => resolve())
+      } else if (options.projectId != null ) {
+        updateScheduleInterval(options.projectId, options.interval)
+          .then((project) => showProjectInfo(project))
           .then(() => resolve())
       }
     } else if (options.cron != null) {
@@ -136,6 +141,20 @@ exports.project = function (options) {
         getProjectsByUser(userId)
           .then((projects) => selectProject(projects))
           .then((project) => updateScheduleCron(project._id, options.interval))
+          .then(() => resolve())
+      }
+    } else if (!options.list && !options.interval && !options.when
+      && !options.cron && !options.delete
+      && !options.subscriber
+      && !options.branch) {
+      if (options.projectId == true) {
+        getProjectsByUser(userId)
+          .then((projects) => selectProject(projects))
+          .then((project) => showProjectInfo(project))
+          .then(() => resolve())
+      } else if (options.projectId != null) {
+        getProject(options.projectId)
+          .then((project) => showProjectInfo(project))
           .then(() => resolve())
       }
     }
@@ -314,7 +333,7 @@ function updateScheduleCron (projectId, cron) {
     console.log(cron)
     awProject.updateScheduleCron(projectId, cron).then(res => {
       if (res != null) {
-        resolve(res.data)
+        resolve(res.data.data)
       }
     }).catch(err => {
       console.error(err)
@@ -325,10 +344,9 @@ function updateScheduleCron (projectId, cron) {
 
 function updateScheduleInterval (projectId, interval) {
   return new Promise ((resolve, reject) => {
-    console.log(interval)
     awProject.updateScheduleInterval(projectId, interval).then(res => {
       if (res != null) {
-        resolve(res.data)
+        resolve(res.data.data)
       }
     }).catch(err => {
       console.error(err)
@@ -339,10 +357,27 @@ function updateScheduleInterval (projectId, interval) {
 
 function updateScheduleWhen (projectId, when) {
   return new Promise ((resolve, reject) => {
-    console.log(when)
     awProject.updateScheduleWhen(projectId, when).then(res => {
       if (res != null) {
-        resolve(res.data)
+        resolve(res.data.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
+function updateSubscriber (projectId, subscriber) {
+  return new Promise ((resolve, reject) => {
+    let subArr = subscriber.replace(' ','').split(',')
+    let data = {
+      subscriber: subscriber.replace(' ','').split(',')
+    }
+    awProject.updateProject(projectId, data).then(res => {
+      if (res != null) {
+        console.log(chalk.bold.green(`${res.data.data.full_name}`) + ' is successfully updated as follow.')
+        resolve(res.data.data)
       }
     }).catch(err => {
       console.error(err)
@@ -382,7 +417,7 @@ function deleteProjectByProjectId (projectId) {
 }
 
 function showProjectInfo (project) {
-  console.log('= Project Information =')
+  console.log(chalk.bold.yellow('Project Information : '))
   makeProjectInfoFormat(project)
 }
 
