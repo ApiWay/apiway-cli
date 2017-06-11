@@ -93,8 +93,9 @@ prog
   .help('')
   .option('-p, --project <projectFullName>', 'Project name (ex. bluehackmaster/apiway-cli')
   .option('-l, --list', 'Show run history')
+  .option('-i, --instanceId <instanceId>', 'Show a information of instance')
   .action((args, options, logger) => {
-    if (!options.project && !options.list) {
+    if (!options.project && !options.list && !options.instanceId) {
       showHelp()
     }
     awInstance.run(options).then((res) => {
