@@ -20,6 +20,7 @@ let awInstance = aw.getInstance();
 var Configstore = require('configstore');
 var pkg         = require('../../package.json')
 const conf = require('../../util/config')
+let awApi = require('../../api')
 const confStore = new Configstore(pkg.name, {foo: 'bar'});
 var repos = new Map();
 var tmpProjects = new Map();
@@ -148,7 +149,7 @@ exports.project = function (options) {
       && !options.subscriber
       && !options.branch) {
       if (options.projectId == true) {
-        getProjectsByUser(userId)
+        awApi.getProjectsByUser(userId)
           .then((projects) => selectProject(projects))
           .then((project) => showProjectInfo(project))
           .then(() => resolve())
@@ -240,17 +241,6 @@ function promptOrg(orgs, callback) {
   inquirer.prompt(questions).then(callback);
 }
 
-function promptProjects (projects, callback) {
-  var questions = [
-    {
-      name: 'project',
-      type: 'list',
-      message: 'Select a project',
-      choices: projects
-    }
-  ];
-  inquirer.prompt(questions).then(callback);
-}
 
 function getInstancesByProject (project) {
   return new Promise ((resolve, reject) => {
@@ -278,23 +268,6 @@ function getProject (projectId) {
       if (res!= null) {
         status.stop()
         resolve(res.data.data)
-      }
-    }).catch(err => {
-      console.error(err)
-      status.stop()
-      reject(err)
-    })
-  })
-}
-
-function getProjectsByUser (userId) {
-  return new Promise ((resolve, reject) => {
-    var status = new Spinner('Getting projects ...');
-    status.start();
-    awProject.getProjectsByUser(userId).then(res => {
-      if (res!= null) {
-        status.stop()
-        resolve(res.data.data.projects)
       }
     }).catch(err => {
       console.error(err)

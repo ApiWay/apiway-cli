@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/ApiWay/apiway-cli#readme",
   "dependencies": {
-    "apiway.js": "latest",
+    "apiway.js": "0.0.33",
     "caporal": "^0.5.0",
     "chalk": "^1.1.3",
     "clui": "^0.3.1",

@@ -144,3 +144,5 @@ typings/
 .env
 
 
+package-lock.json
+config.json
