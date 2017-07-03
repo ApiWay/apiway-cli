@@ -23,7 +23,6 @@ var pkg         = require('../../package.json')
 const conf = require('../../util/config')
 let awApi = require('../../api')
 const confStore = new Configstore(pkg.name, {foo: 'bar'});
-var repos = new Map();
 
 exports.schedule = function (options) {
   return new Promise ((resolve, reject) => {
@@ -47,6 +46,24 @@ exports.schedule = function (options) {
           .then((schedules) => showSchedules(schedules))
           .then(() => resolve())
       }
+    } else if (options.delete) {
+      if (options.projectId != null) {
+        awApi.getProject(options.projectId)
+          .then((project) => awApi.getSchedulesByProject(project))
+          .then((schedules) => awApi.selectSchedule(schedules))
+          .then((schedule) => awApi.deleteSchedule(schedule))
+          .then((schedule) => showDeleteResultMessage(schedule))
+          .then(() => resolve())
+      } else if (options.projectId == undefined) {
+        awApi.getProjectsByUser(userId)
+          .then((projects) => awApi.selectProject(projects))
+          .then((project) => awApi.getSchedulesByProject(project))
+          .then((schedules) => awApi.selectSchedule(schedules))
+          .then((schedule) => awApi.deleteSchedule(schedule))
+          .then((schedule) => showDeleteResultMessage(schedule))
+          .then(() => resolve())
+      }
+    } else if (options.delete) {
     }
   })
 }
@@ -126,17 +143,8 @@ function updateBranch (projectId, branch) {
   })
 }
 
-function deleteProjectByProjectId (projectId) {
-  return new Promise ((resolve, reject) => {
-    awProject.deleteProject(projectId).then(res => {
-      if (res != null) {
-        resolve()
-      }
-    }).catch(err => {
-      console.error(err)
-      reject(err)
-    })
-  })
+function showDeleteResultMessage (schedule) {
+  console.log(chalk.bold.green(`${schedule._id}`) + ' is successfully deleted')
 }
 
 function showProjectInfo (project) {

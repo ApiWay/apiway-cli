@@ -72,6 +72,7 @@ function getSchedulesByProject (project) {
     awSchedule.getSchedulesByProject(project._id).then(res => {
       if (res!= null) {
         status.stop()
+        // console.log(res.data.data.schedules)
         resolve(res.data.data.schedules)
       }
     }).catch(err => {
@@ -94,6 +95,44 @@ function promptProjects (projects, callback) {
   inquirer.prompt(questions).then(callback);
 }
 
+function promptSchedules (schedules, callback) {
+  var questions = [
+    {
+      name: 'schedule',
+      type: 'list',
+      message: 'Select a schedule',
+      choices: schedules
+    }
+  ];
+  inquirer.prompt(questions).then(callback);
+}
+
+function deleteProject(project) {
+  return new Promise ((resolve, reject) => {
+    awProject.deleteProject(project._id).then(res => {
+      if (res != null) {
+        resolve(project)
+      }
+    }).catch(err => {
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
+function deleteSchedule (schedule) {
+  return new Promise ((resolve, reject) => {
+    awSchedule.deleteSchedule(schedule._id).then(res => {
+      if (res != null) {
+        resolve(schedule)
+      }
+    }).catch(err => {
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
 function getSchedulesByUser (userId) {
   return new Promise ((resolve, reject) => {
     var status = new Spinner('Getting schedules ...');
@@ -111,8 +150,27 @@ function getSchedulesByUser (userId) {
   })
 }
 
+function selectSchedule (schedules) {
+  return new Promise ((resolve, reject) => {
+    var tmpSchedules = new Map();
+    let array = []
+    schedules.forEach(schedule => {
+      if (schedule._id) {
+        array.push(schedule._id)
+        tmpSchedules.set(schedule._id, schedule)
+      }
+    })
+    promptSchedules(array, (data) => {
+      resolve(tmpSchedules.get(data.schedule))
+    })
+  })
+}
+
 exports.getProject = getProject
+exports.deleteProject = deleteProject
+exports.deleteSchedule = deleteSchedule
 exports.promptProjects = promptProjects
 exports.getSchedulesByProject  = getSchedulesByProject
 exports.getSchedulesByUser = getSchedulesByUser
 exports.selectProject  = selectProject
+exports.selectSchedule = selectSchedule
