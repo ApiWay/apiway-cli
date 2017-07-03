@@ -18,6 +18,7 @@ let awUser = aw.getUser();
 let awProject = aw.getProject();
 let awInstance = aw.getInstance();
 let awSchedule = aw.getSchedule();
+let awScheduler = aw.getScheduler();
 var Configstore = require('configstore');
 var pkg         = require('../../package.json')
 const conf = require('../../util/config')
@@ -65,6 +66,7 @@ exports.schedule = function (options) {
           .then((project) => awApi.getSchedulesByProject(project))
           .then((schedules) => awApi.selectSchedule(schedules))
           .then((schedule) => awApi.deleteSchedule(schedule))
+          .then((schedule) => awApi.deleteScheduleInScheduler(schedule))
           .then((schedule) => showDeleteResultMessage(schedule))
           .then(() => resolve())
       } else if (options.projectId == undefined) {
@@ -73,6 +75,7 @@ exports.schedule = function (options) {
           .then((project) => awApi.getSchedulesByProject(project))
           .then((schedules) => awApi.selectSchedule(schedules))
           .then((schedule) => awApi.deleteSchedule(schedule))
+          .then((schedule) => awApi.deleteScheduleInScheduler(schedule))
           .then((schedule) => showDeleteResultMessage(schedule))
           .then(() => resolve())
       }

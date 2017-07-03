@@ -9,6 +9,7 @@ let aw = new ApiWay({});
 let awProject = aw.getProject();
 let awInstance = aw.getInstance();
 let awSchedule = aw.getSchedule();
+let awScheduler = aw.getScheduler();
 var Configstore = require('configstore');
 var pkg         = require('../package.json')
 const conf = require('../util/config')
@@ -120,6 +121,20 @@ function deleteProject(project) {
   })
 }
 
+function deleteScheduleInScheduler (schedule) {
+  return new Promise ((resolve, reject) => {
+    console.log(schedule)
+    awScheduler.deleteSchedule(schedule.schedulerId, schedule._id).then(res => {
+      if (res != null) {
+        resolve(schedule)
+      }
+    }).catch(err => {
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
 function deleteSchedule (schedule) {
   return new Promise ((resolve, reject) => {
     awSchedule.deleteSchedule(schedule._id).then(res => {
@@ -213,6 +228,7 @@ exports.getProject = getProject
 exports.runProject = runProject
 exports.deleteProject = deleteProject
 exports.deleteSchedule = deleteSchedule
+exports.deleteScheduleInScheduler = deleteScheduleInScheduler
 exports.promptProjects = promptProjects
 exports.getSchedulesByProject  = getSchedulesByProject
 exports.getSchedulesByUser = getSchedulesByUser
