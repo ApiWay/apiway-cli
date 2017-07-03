@@ -12,6 +12,10 @@ var awInstance = require('./api/instance');
 var awSchedule = require('./api/schedule');
 var util = require('./util');
 
+var Configstore = require('configstore');
+var pkg         = require('./package.json')
+const conf      = require('./util/config')
+const confStore = new Configstore(pkg.name, {foo: 'bar'});
 util.clear()
 
 console.log(
@@ -123,6 +127,7 @@ prog
       && !options.when && !options.interval && !options.cron) {
       showHelp()
     }
+    confStore.set(conf.OPTIONS, options)
     awSchedule.schedule(options).then((res) => {
     }, (err) => {
       showHelp(err)

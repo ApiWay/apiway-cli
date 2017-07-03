@@ -166,7 +166,51 @@ function selectSchedule (schedules) {
   })
 }
 
+function runProject (project) {
+  return new Promise ((resolve, reject) => {
+    var status = new Spinner('Running project ...');
+    status.start();
+    confStore.set(conf.LAST_RUN_PROJECT, project.full_name)
+    awInstance.addInstance({projectId: project._id}).then(res => {
+      if (res!= null) {
+        status.stop()
+        resolve(res.data.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      status.stop()
+      reject(err)
+    })
+  })
+}
+
+function createSchedule (project) {
+  return new Promise ((resolve, reject) => {
+    var status = new Spinner('Creating schedule ...');
+    status.start();
+    confStore.set(conf.LAST_RUN_PROJECT, project.full_name)
+    let options = confStore.get(conf.OPTIONS)
+    let cron = options.cron ? options.cron : null
+    let data = {
+      projectId: project._id,
+      owner: project.owner,
+      cron: cron
+    }
+    awSchedule.addSchedule(data).then(res => {
+      if (res!= null) {
+        status.stop()
+        resolve(res.data.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      status.stop()
+      reject(err)
+    })
+  })
+}
+
 exports.getProject = getProject
+exports.runProject = runProject
 exports.deleteProject = deleteProject
 exports.deleteSchedule = deleteSchedule
 exports.promptProjects = promptProjects
@@ -174,3 +218,4 @@ exports.getSchedulesByProject  = getSchedulesByProject
 exports.getSchedulesByUser = getSchedulesByUser
 exports.selectProject  = selectProject
 exports.selectSchedule = selectSchedule
+exports.createSchedule = createSchedule

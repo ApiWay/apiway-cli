@@ -17,6 +17,8 @@ let aw = new ApiWay({});
 let awUser = aw.getUser();
 let awProject = aw.getProject();
 let awInstance = aw.getInstance();
+let awApi = require('../../api')
+
 var Configstore = require('configstore');
 var pkg         = require('../../package.json')
 const conf = require('../../util/config')
@@ -41,7 +43,7 @@ exports.run = function (options) {
       if (options.project == true) {
         getProjectsByUser(userId)
           .then((projects) => selectProject(projects))
-          .then((project) => runProject(project))
+          .then((project) => awApi.runProject(project))
           .then((instance) => {
             showRunProjectResult(instance)
             resolve()
@@ -217,24 +219,6 @@ function runProjectByName (projectName) {
     status.start();
     confStore.set(conf.LAST_RUN_PROJECT, projectName)
     awInstance.addInstance({full_name: projectName}).then(res => {
-      if (res!= null) {
-        status.stop()
-        resolve(res.data.data)
-      }
-    }).catch(err => {
-      console.error(err)
-      status.stop()
-      reject(err)
-    })
-  })
-}
-
-function runProject (project) {
-  return new Promise ((resolve, reject) => {
-    var status = new Spinner('Running project ...');
-    status.start();
-    confStore.set(conf.LAST_RUN_PROJECT, project.full_name)
-    awInstance.addInstance({projectId: project._id}).then(res => {
       if (res!= null) {
         status.stop()
         resolve(res.data.data)
