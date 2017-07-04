@@ -39,6 +39,7 @@ function getProject (projectId) {
     awProject.getProject(projectId).then(res => {
       if (res != null) {
         status.stop()
+        console.log(res.data)
         confStore.set(conf.LAST_SELECTED_PROJECT, res.data.data.full_name)
         resolve(res.data.data)
       }
@@ -50,21 +51,20 @@ function getProject (projectId) {
   })
 }
 
-function selectProject (projects) {
+function updateScheduleCron (projectId, cron) {
   return new Promise ((resolve, reject) => {
-    var tmpProjects = new Map();
-    let array = []
-    projects.forEach(project => {
-      if (project.full_name) {
-        array.push(project.full_name)
-        tmpProjects.set(project.full_name, project)
+    console.log(cron)
+    awProject.updateScheduleCron(projectId, cron).then(res => {
+      if (res != null) {
+        resolve(res.data.data)
       }
-    })
-    promptProjects(array, (data) => {
-      resolve(tmpProjects.get(data.project))
+    }).catch(err => {
+      console.error(err)
+      reject(err)
     })
   })
 }
+
 
 function getSchedulesByProject (project) {
   return new Promise ((resolve, reject) => {
@@ -224,6 +224,58 @@ function createSchedule (project) {
   })
 }
 
+function updateBranch (projectId, branch) {
+  return new Promise ((resolve, reject) => {
+    let data = {
+      default_branch: branch
+    }
+    awProject.updateProject(projectId, data).then(res => {
+      if (res != null) {
+        console.log(chalk.bold.green(`${res.data.data.full_name}`) + ' is successfully updated as follow.')
+        resolve(res.data.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
+function updateSubscriber (projectId, subscriber) {
+  return new Promise ((resolve, reject) => {
+    let subArr = subscriber.replace(' ','').split(',')
+    let data = {
+      subscriber: subscriber.replace(' ','').split(',')
+    }
+    awProject.updateProject(projectId, data).then(res => {
+      if (res != null) {
+        console.log(chalk.bold.green(`${res.data.data.full_name}`) + ' is successfully updated as follow.')
+        resolve(res.data.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
+
+function selectProject (projects) {
+  return new Promise ((resolve, reject) => {
+    var tmpProjects = new Map();
+    let array = []
+    projects.forEach(project => {
+      if (project.full_name) {
+        array.push(project.full_name)
+        tmpProjects.set(project.full_name, project)
+      }
+    })
+    promptProjects(array, (data) => {
+      resolve(tmpProjects.get(data.project))
+    })
+  })
+}
+
 exports.getProject = getProject
 exports.runProject = runProject
 exports.deleteProject = deleteProject
@@ -235,3 +287,6 @@ exports.getSchedulesByUser = getSchedulesByUser
 exports.selectProject  = selectProject
 exports.selectSchedule = selectSchedule
 exports.createSchedule = createSchedule
+exports.updateScheduleCron = updateScheduleCron
+exports.updateSubscriber = updateSubscriber
+exports.updateBranch = updateBranch

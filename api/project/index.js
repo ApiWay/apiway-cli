@@ -68,7 +68,7 @@ exports.project = function (options) {
   return new Promise ((resolve, reject) => {
     let userId = confStore.get('userId')
     if (options.list == true) {
-      getProjectsByUser(userId)
+      awApi.getProjectsByUser(userId)
         .then((projects) => {
           showProjects(projects)
           resolve()
@@ -77,13 +77,13 @@ exports.project = function (options) {
       reject('Error : -s <subscriber> | Need subscriber emails')
     } else if (options.subscriber != null) {
       if (options.projectId == true) {
-        getProjectsByUser(userId)
-          .then((projects) => selectProject(projects))
-          .then((project) => updateSubscriber(project._id, options.subscriber))
+        awApi.getProjectsByUser(userId)
+          .then((projects) => awApi.selectProject(projects))
+          .then((project) => awApi.updateSubscriber(project._id, options.subscriber))
           .then((project) => showProjectInfo(project))
           .then(() => resolve())
       } else if (options.projectId != null) {
-        updateSubscriber(options.projectId, options.subscriber)
+        awApi.updateSubscriber(options.projectId, options.subscriber)
           .then((project) => showProjectInfo(project))
           .then(() => resolve())
       }
@@ -95,15 +95,15 @@ exports.project = function (options) {
           .then((project) => showProjectInfo(project))
           .then(() => resolve())
       } else {
-        getProjectsByUser(userId)
-          .then((projects) => selectProject(projects))
+        awApi.getProjectsByUser(userId)
+          .then((projects) => awApi.selectProject(projects))
           .then((project) => updateBranch(project._id, options.branch))
           .then((project) => showProjectInfo(project))
           .then(() => resolve())
       }
     } else if (options.delete == true) {
-      getProjectsByUser(userId)
-        .then((projects) => selectProject(projects))
+      awApi.getProjectsByUser(userId)
+        .then((projects) => awApi.selectProject(projects))
         .then((project) => deleteProjectByProjectId(project._id))
         .then(() => resolve())
     } else if (options.delete != null) {
@@ -112,8 +112,8 @@ exports.project = function (options) {
       reject('Error : Please input time')
     } else if (options.when != null) {
       if (options.projectId == true) {
-        getProjectsByUser(userId)
-          .then((projects) => selectProject(projects))
+        awApi.getProjectsByUser(userId)
+          .then((projects) => awApi.selectProject(projects))
           .then((project) => updateScheduleWhen(project._id, options.when))
           .then((project) => showProjectInfo(project))
           .then(() => resolve())
@@ -124,8 +124,8 @@ exports.project = function (options) {
       }
     } else if (options.interval != null) {
       if (options.projectId == true) {
-        getProjectsByUser(userId)
-          .then((projects) => selectProject(projects))
+        awApi.getProjectsByUser(userId)
+          .then((projects) => awApi.selectProject(projects))
           .then((project) => updateScheduleInterval(project._id, options.interval))
           .then((project) => showProjectInfo(project))
           .then(() => resolve())
@@ -136,12 +136,12 @@ exports.project = function (options) {
       }
     } else if (options.cron != null) {
       if (options.projectId != null) {
-        updateScheduleCron(options.projectId, options.interval)
+        awApi.updateScheduleCron(options.projectId, options.interval)
           .then(() => resolve())
       } else {
-        getProjectsByUser(userId)
-          .then((projects) => selectProject(projects))
-          .then((project) => updateScheduleCron(project._id, options.interval))
+        awApi.getProjectsByUser(userId)
+          .then((projects) => awApi.selectProject(projects))
+          .then((project) => awApi.updateScheduleCron(project._id, options.interval))
           .then(() => resolve())
       }
     } else if (!options.list && !options.interval && !options.when
@@ -150,11 +150,11 @@ exports.project = function (options) {
       && !options.branch) {
       if (options.projectId == true) {
         awApi.getProjectsByUser(userId)
-          .then((projects) => selectProject(projects))
+          .then((projects) => awApi.selectProject(projects))
           .then((project) => showProjectInfo(project))
           .then(() => resolve())
       } else if (options.projectId != null) {
-        getProject(options.projectId)
+        awApi.getProject(options.projectId)
           .then((project) => showProjectInfo(project))
           .then(() => resolve())
       }
@@ -170,21 +170,6 @@ function checkRepo(owner, repo) {
     }
     github.checkRepo(options, function (repo) {
       resolve(repo)
-    })
-  })
-}
-
-function selectProject (projects) {
-  return new Promise ((resolve, reject) => {
-    let array = []
-    projects.forEach(project => {
-      if (project.full_name) {
-        array.push(project.full_name)
-        tmpProjects.set(project.full_name, project)
-      }
-    })
-    promptProjects(array, (data) => {
-      resolve(tmpProjects.get(data.project))
     })
   })
 }
@@ -260,23 +245,6 @@ function getInstancesByProject (project) {
   })
 }
 
-function getProject (projectId) {
-  return new Promise ((resolve, reject) => {
-    var status = new Spinner('Getting project ...');
-    status.start();
-    awProject.getProject(projectId).then(res => {
-      if (res!= null) {
-        status.stop()
-        resolve(res.data.data)
-      }
-    }).catch(err => {
-      console.error(err)
-      status.stop()
-      reject(err)
-    })
-  })
-}
-
 function addRepo (repo) {
   return new Promise ((resolve, reject) => {
     var data = {
@@ -301,20 +269,6 @@ function addRepo (repo) {
   })
 }
 
-function updateScheduleCron (projectId, cron) {
-  return new Promise ((resolve, reject) => {
-    console.log(cron)
-    awProject.updateScheduleCron(projectId, cron).then(res => {
-      if (res != null) {
-        resolve(res.data.data)
-      }
-    }).catch(err => {
-      console.error(err)
-      reject(err)
-    })
-  })
-}
-
 function updateScheduleInterval (projectId, interval) {
   return new Promise ((resolve, reject) => {
     awProject.updateScheduleInterval(projectId, interval).then(res => {
@@ -332,41 +286,6 @@ function updateScheduleWhen (projectId, when) {
   return new Promise ((resolve, reject) => {
     awProject.updateScheduleWhen(projectId, when).then(res => {
       if (res != null) {
-        resolve(res.data.data)
-      }
-    }).catch(err => {
-      console.error(err)
-      reject(err)
-    })
-  })
-}
-
-function updateSubscriber (projectId, subscriber) {
-  return new Promise ((resolve, reject) => {
-    let subArr = subscriber.replace(' ','').split(',')
-    let data = {
-      subscriber: subscriber.replace(' ','').split(',')
-    }
-    awProject.updateProject(projectId, data).then(res => {
-      if (res != null) {
-        console.log(chalk.bold.green(`${res.data.data.full_name}`) + ' is successfully updated as follow.')
-        resolve(res.data.data)
-      }
-    }).catch(err => {
-      console.error(err)
-      reject(err)
-    })
-  })
-}
-
-function updateBranch (projectId, branch) {
-  return new Promise ((resolve, reject) => {
-    let data = {
-      default_branch: branch
-    }
-    awProject.updateProject(projectId, data).then(res => {
-      if (res != null) {
-        console.log(chalk.bold.green(`${res.data.data.full_name}`) + ' is successfully updated as follow.')
         resolve(res.data.data)
       }
     }).catch(err => {
