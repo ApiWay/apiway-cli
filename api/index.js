@@ -73,7 +73,7 @@ function getSchedulesByProject (project) {
     awSchedule.getSchedulesByProject(project._id).then(res => {
       if (res!= null) {
         status.stop()
-        // console.log(res.data.data.schedules)
+        console.log(res.data)
         resolve(res.data.data.schedules)
       }
     }).catch(err => {
@@ -124,7 +124,7 @@ function deleteProject(project) {
 function deleteScheduleInScheduler (schedule) {
   return new Promise ((resolve, reject) => {
     console.log(schedule)
-    awScheduler.deleteSchedule(schedule.schedulerId, schedule._id).then(res => {
+    awScheduler.deleteSchedule(schedule._id).then(res => {
       if (res != null) {
         resolve(schedule)
       }
@@ -143,6 +143,23 @@ function deleteSchedule (schedule) {
       }
     }).catch(err => {
       console.error(err)
+      reject(err)
+    })
+  })
+}
+
+function getSchedule (id) {
+  return new Promise ((resolve, reject) => {
+    var status = new Spinner('Getting a schedule ...');
+    status.start();
+    awSchedule.getSchedule(id).then(res => {
+      if (res!= null) {
+        status.stop()
+        resolve(res.data.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      status.stop()
       reject(err)
     })
   })
@@ -277,6 +294,7 @@ function selectProject (projects) {
 }
 
 exports.getProject = getProject
+exports.getSchedule = getSchedule
 exports.runProject = runProject
 exports.deleteProject = deleteProject
 exports.deleteSchedule = deleteSchedule

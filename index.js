@@ -101,9 +101,20 @@ prog
   .help('')
   .option('-p, --projectId <projectId>', 'Specify a projectID')
   .option('-a, --add', 'Add ad Schedule')
-  .option('-l, --list', 'Show the Schedule list')
+  .option('-l, --list',
+    'Show all of user\'s Schedule\n' +
+    '  $ apiway schedule -l \n' +
+    'Show all of Project\'s Schedule \n' +
+    '  $ apiway schedule -p <projectId> -l \n' +
+    'Show all of Project\'s Schedule (Interactive Mode) \n' +
+    '  $ apiway schedule -p -l \n')
   .option('-s, --start', 'Start the Schedule')
   .option('-e, --stop', 'Stop the schedule')
+  .option('-i, --scheduleId <scheduleId>',
+    'Show information of Schedule \n' +
+    '  $ apiway schedule -i <scheduleId> \n' +
+    'Delete a Schedule \n' +
+    '  $ apiway schedule -i <scheduleId> -d \n')
   .option('-t, --interval <interval>',
     'Set schedule with interval time \n' +
     '  (e.g.) 1h, 4h, 1d, 2d \n' +
@@ -122,6 +133,7 @@ prog
     if (!options.list && !options.delete
       && !options.projectId
       && !options.add
+      && !options.scheduleId
       && !options.start
       && !options.stop
       && !options.when && !options.interval && !options.cron) {
