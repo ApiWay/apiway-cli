@@ -10,6 +10,7 @@ var awUser = require('./api/user');
 var awProject = require('./api/project');
 var awInstance = require('./api/instance');
 var awSchedule = require('./api/schedule');
+var awSubscribe = require('./api/subscribe');
 var util = require('./util');
 
 var Configstore = require('configstore');
@@ -141,6 +142,25 @@ prog
     }
     confStore.set(conf.OPTIONS, options)
     awSchedule.schedule(options).then((res) => {
+    }, (err) => {
+      showHelp(err)
+    })
+  })
+
+  // the subscribe command
+  .command('subscribe', "Subscribe command for apiway.io")
+  .help('')
+  .option('-a, --add <email>', 'Add subscriber')
+  .option('-d, --delete <email>', 'Add subscriber')
+  .option('-p, --projectId <projectId>', 'Specify a projectID')
+  .option('-l, --list', 'Show subscriber list')
+  .action((args, options, logger) => {
+    if (!options.add && !options.delete
+      && !options.projectId
+      && !options.list) {
+      showHelp()
+    }
+    awSubscribe.subcribe(options).then((res) => {
     }, (err) => {
       showHelp(err)
     })
