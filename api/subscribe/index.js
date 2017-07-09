@@ -12,7 +12,7 @@ var git         = require('simple-git')();
 var touch       = require('touch');
 var fs          = require('fs');
 var files       = require('../../lib/files');
-var ApiWay  = require('apiway.js')
+var ApiWay  = require('apiway-sdk-js')
 let aw = new ApiWay({});
 let awUser = aw.getUser();
 let awProject = aw.getProject();
@@ -24,17 +24,17 @@ let awApi = require('../../api')
 const confStore = new Configstore(pkg.name, {foo: 'bar'});
 var repos = new Map();
 
-exports.subcribe = function (options) {
+exports.subscribe = function (options) {
   return new Promise ((resolve, reject) => {
     let userId = confStore.get('userId')
     if (options.list == true) {
     } else if (options.add == true) {
       reject('Error : -a <email> | Need a email (e.g. xxx@gmail.com')
     } else if (options.add != null) {
-      if (options.projectId == true) {
+      if (options.projectId == true || options.projectId == undefined) {
         awApi.getProjectsByUser(userId)
           .then((projects) => awApi.selectProject(projects))
-          .then((project) => awApi.updateSubscriber(project._id, options.subscriber))
+          .then((project) => awApi.addEmailSubscriber(project._id, options.add))
           .then((project) => showProjectInfo(project))
           .then(() => resolve())
       } else if (options.projectId != null) {
@@ -44,6 +44,12 @@ exports.subcribe = function (options) {
       }
     } else if (options.delete == true) {
       reject('Error : -d <email> | Need a email')
+    } else if (options.projectId == true || options.projectId == undefined) {
+      awApi.getProjectsByUser(userId)
+        .then((projects) => awApi.selectProject(projects))
+        .then((project) => awApi.deleteEmailSubscriber(project._id, options.delete))
+        .then((data) => showDeleteEmailSubscriberResultMsg(data))
+        .then(() => resolve())
     }
   })
 }
@@ -192,6 +198,14 @@ function deleteProjectByProjectId (projectId) {
       reject(err)
     })
   })
+}
+
+function showDeleteEmailSubscriberResultMsg (data) {
+  if (data.responseStatus == 'FAIL') {
+    console.log(chalk.bold.red(data.responseMessage))
+  } else {
+    console.log(chalk.bold.green(data.responseMessage))
+  }
 }
 
 function showProjectInfo (project) {

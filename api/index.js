@@ -4,7 +4,7 @@ var CLI         = require('clui');
 var figlet      = require('figlet');
 var inquirer    = require('inquirer');
 var Spinner     = CLI.Spinner;
-var ApiWay  = require('apiway.js')
+var ApiWay  = require('apiway-sdk-js')
 let aw = new ApiWay({});
 let awProject = aw.getProject();
 let awInstance = aw.getInstance();
@@ -258,6 +258,38 @@ function updateBranch (projectId, branch) {
   })
 }
 
+function addEmailSubscriber (projectId, email) {
+  return new Promise ((resolve, reject) => {
+    let options = {
+      email: email
+    }
+    awProject.addEmailSubscriber(projectId, options).then(res => {
+      if (res != null) {
+        resolve(res.data.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
+function deleteEmailSubscriber (projectId, email) {
+  return new Promise ((resolve, reject) => {
+    let options = {
+      email: email
+    }
+    awProject.deleteEmailSubscriber(projectId, options).then(res => {
+      if (res != null) {
+        resolve(res.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
 function updateSubscriber (projectId, subscriber) {
   return new Promise ((resolve, reject) => {
     let subArr = subscriber.replace(' ','').split(',')
@@ -308,3 +340,5 @@ exports.createSchedule = createSchedule
 exports.updateScheduleCron = updateScheduleCron
 exports.updateSubscriber = updateSubscriber
 exports.updateBranch = updateBranch
+exports.addEmailSubscriber = addEmailSubscriber
+exports.deleteEmailSubscriber = deleteEmailSubscriber

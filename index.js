@@ -160,7 +160,7 @@ prog
       && !options.list) {
       showHelp()
     }
-    awSubscribe.subcribe(options).then((res) => {
+    awSubscribe.subscribe(options).then((res) => {
     }, (err) => {
       showHelp(err)
     })
