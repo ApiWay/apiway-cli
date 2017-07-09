@@ -23,63 +23,18 @@ const conf = require('../../util/config')
 let awApi = require('../../api')
 const confStore = new Configstore(pkg.name, {foo: 'bar'});
 var repos = new Map();
-var tmpProjects = new Map();
 
-exports.add  = function (options) {
-  return new Promise ((resolve, reject) => {
-
-    if (!options.owner && !options.repo) {
-        github.getOrgs()
-          .then((orgs) => selectLogin(orgs))
-          .then((login) => selectRepo(login))
-          .then((repo) => addRepo(repo))
-          .then((projectId) => {
-            showAddProjectDoneMsg(confStore.get(conf.LAST_ADDED_PROJECT), projectId)
-            resolve()
-          })
-    } else if (options.owner == null && options.repo != null) {
-        github.getOrgs()
-          .then((orgs) => selectLogin(orgs))
-          .then((login) => checkRepo(login, options.repo))
-          .then((repo) => addRepo(repo))
-          .then((projectId) => {
-            showAddProjectDoneMsg(confStore.get(conf.LAST_ADDED_PROJECT), projectId)
-            resolve()
-          })
-    } else if (options.owner != null && options.repo == null) {
-        selectRepo(options.owner)
-          .then((repo) => addRepo(repo))
-          .then((projectId) => {
-            showAddProjectDoneMsg(confStore.get(conf.LAST_ADDED_PROJECT), projectId)
-            resolve()
-        })
-    } else if (options.owner != null && options.repo != null) {
-        checkRepo(options.owner, options.repo)
-          .then((repo) => addRepo(repo))
-          .then((projectId) => {
-            showAddProjectDoneMsg(confStore.get(conf.LAST_ADDED_PROJECT), projectId)
-            resolve()
-        })
-    }
-  })
-}
-
-exports.project = function (options) {
+exports.subscribe = function (options) {
   return new Promise ((resolve, reject) => {
     let userId = confStore.get('userId')
     if (options.list == true) {
-      awApi.getProjectsByUser(userId)
-        .then((projects) => {
-          showProjects(projects)
-          resolve()
-          })
-    } else if (options.subscriber == true) {
-      reject('Error : -s <subscriber> | Need subscriber emails')
-    } else if (options.subscriber != null) {
-      if (options.projectId == true) {
+    } else if (options.add == true) {
+      reject('Error : -a <email> | Need a email (e.g. xxx@gmail.com')
+    } else if (options.add != null) {
+      if (options.projectId == true || options.projectId == undefined) {
         awApi.getProjectsByUser(userId)
           .then((projects) => awApi.selectProject(projects))
-          .then((project) => awApi.updateSubscriber(project._id, options.subscriber))
+          .then((project) => awApi.addEmailSubscriber(project._id, options.add))
           .then((project) => showProjectInfo(project))
           .then(() => resolve())
       } else if (options.projectId != null) {
@@ -87,77 +42,14 @@ exports.project = function (options) {
           .then((project) => showProjectInfo(project))
           .then(() => resolve())
       }
-    } else if (options.branch == true) {
-      reject('Error : -d <branch> | Need a branch name')
-    } else if (options.branch != null) {
-      if (options.projectId != null) {
-        updateBranch(options.projectId, options.branch)
-          .then((project) => showProjectInfo(project))
-          .then(() => resolve())
-      } else {
-        awApi.getProjectsByUser(userId)
-          .then((projects) => awApi.selectProject(projects))
-          .then((project) => updateBranch(project._id, options.branch))
-          .then((project) => showProjectInfo(project))
-          .then(() => resolve())
-      }
     } else if (options.delete == true) {
+      reject('Error : -d <email> | Need a email')
+    } else if (options.projectId == true || options.projectId == undefined) {
       awApi.getProjectsByUser(userId)
         .then((projects) => awApi.selectProject(projects))
-        .then((project) => deleteProjectByProjectId(project._id))
+        .then((project) => awApi.deleteEmailSubscriber(project._id, options.delete))
+        .then((data) => showDeleteEmailSubscriberResultMsg(data))
         .then(() => resolve())
-    } else if (options.delete != null) {
-      deleteProjectByProjectId(options.delete)
-    } else if (options.when == true || options.interval == true || options.cron == true) {
-      reject('Error : Please input time')
-    } else if (options.when != null) {
-      if (options.projectId == true) {
-        awApi.getProjectsByUser(userId)
-          .then((projects) => awApi.selectProject(projects))
-          .then((project) => updateScheduleWhen(project._id, options.when))
-          .then((project) => showProjectInfo(project))
-          .then(() => resolve())
-      } else if (options.projectId != null) {
-        updateScheduleWhen(options.projectId, options.when)
-          .then((project) => showProjectInfo(project))
-          .then(() => resolve())
-      }
-    } else if (options.interval != null) {
-      if (options.projectId == true) {
-        awApi.getProjectsByUser(userId)
-          .then((projects) => awApi.selectProject(projects))
-          .then((project) => updateScheduleInterval(project._id, options.interval))
-          .then((project) => showProjectInfo(project))
-          .then(() => resolve())
-      } else if (options.projectId != null ) {
-        updateScheduleInterval(options.projectId, options.interval)
-          .then((project) => showProjectInfo(project))
-          .then(() => resolve())
-      }
-    } else if (options.cron != null) {
-      if (options.projectId != null) {
-        awApi.updateScheduleCron(options.projectId, options.interval)
-          .then(() => resolve())
-      } else {
-        awApi.getProjectsByUser(userId)
-          .then((projects) => awApi.selectProject(projects))
-          .then((project) => awApi.updateScheduleCron(project._id, options.interval))
-          .then(() => resolve())
-      }
-    } else if (!options.list && !options.interval && !options.when
-      && !options.cron && !options.delete
-      && !options.subscriber
-      && !options.branch) {
-      if (options.projectId == true) {
-        awApi.getProjectsByUser(userId)
-          .then((projects) => awApi.selectProject(projects))
-          .then((project) => showProjectInfo(project))
-          .then(() => resolve())
-      } else if (options.projectId != null) {
-        awApi.getProject(options.projectId)
-          .then((project) => showProjectInfo(project))
-          .then(() => resolve())
-      }
     }
   })
 }
@@ -306,6 +198,14 @@ function deleteProjectByProjectId (projectId) {
       reject(err)
     })
   })
+}
+
+function showDeleteEmailSubscriberResultMsg (data) {
+  if (data.responseStatus == 'FAIL') {
+    console.log(chalk.bold.red(data.responseMessage))
+  } else {
+    console.log(chalk.bold.green(data.responseMessage))
+  }
 }
 
 function showProjectInfo (project) {

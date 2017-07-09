@@ -12,7 +12,7 @@ var git         = require('simple-git')();
 var touch       = require('touch');
 var fs          = require('fs');
 var files       = require('../../lib/files');
-var ApiWay  = require('apiway.js')
+var ApiWay  = require('apiway-sdk-js')
 let aw = new ApiWay({});
 let awUser = aw.getUser();
 let awProject = aw.getProject();
@@ -42,7 +42,6 @@ exports.schedule = function (options) {
           .then(() => resolve())
       } else if (options.projectId == undefined) {
         let userId = confStore.get('userId')
-        console.log(userId)
         awApi.getSchedulesByUser(userId)
           .then((schedules) => showSchedules(schedules))
           .then(() => resolve())
@@ -69,7 +68,7 @@ exports.schedule = function (options) {
           .then((schedule) => awApi.deleteScheduleInScheduler(schedule))
           .then((schedule) => showDeleteResultMessage(schedule))
           .then(() => resolve())
-      } else if (options.projectId == undefined) {
+      } else if (options.projectId == true) {
         awApi.getProjectsByUser(userId)
           .then((projects) => awApi.selectProject(projects))
           .then((project) => awApi.getSchedulesByProject(project))
@@ -78,7 +77,41 @@ exports.schedule = function (options) {
           .then((schedule) => awApi.deleteScheduleInScheduler(schedule))
           .then((schedule) => showDeleteResultMessage(schedule))
           .then(() => resolve())
+      } else if (options.scheduleId == true) {
+        reject('Error : Please input scheduleId')
+      } else if (options.scheduleId != null) {
+        awApi.getSchedule(options.scheduleId)
+          .then((schedule) => awApi.deleteScheduleInScheduler(schedule))
+          .then((schedule) => awApi.deleteSchedule(schedule))
+          .then((schedule) => showDeleteResultMessage(schedule))
+          .then(() => resolve())
+      } else if (options.projectId == undefined) {
+        awApi.getSchedulesByUser(userId)
+          .then((schedules) => awApi.selectSchedule(schedules))
+          .then((schedule) => awApi.deleteSchedule(schedule))
+          .then((schedule) => awApi.deleteScheduleInScheduler(schedule))
+          .then((schedule) => showDeleteResultMessage(schedule))
+          .then(() => resolve())
       }
+    // } else if (options.scheduleId) {
+    //   if (options.projectId != null) {
+    //     awApi.getProject(options.projectId)
+    //       .then((project) => awApi.getSchedulesByProject(project))
+    //       .then((schedules) => awApi.selectSchedule(schedules))
+    //       .then((schedule) => awApi.deleteSchedule(schedule))
+    //       .then((schedule) => awApi.deleteScheduleInScheduler(schedule))
+    //       .then((schedule) => showDeleteResultMessage(schedule))
+    //       .then(() => resolve())
+    //   } else if (options.projectId == undefined) {
+    //     awApi.getProjectsByUser(userId)
+    //       .then((projects) => awApi.selectProject(projects))
+    //       .then((project) => awApi.getSchedulesByProject(project))
+    //       .then((schedules) => awApi.selectSchedule(schedules))
+    //       .then((schedule) => awApi.deleteSchedule(schedule))
+    //       .then((schedule) => awApi.deleteScheduleInScheduler(schedule))
+    //       .then((schedule) => showDeleteResultMessage(schedule))
+    //       .then(() => resolve())
+    //   }
     }
   })
 }

@@ -4,7 +4,7 @@ var CLI         = require('clui');
 var figlet      = require('figlet');
 var inquirer    = require('inquirer');
 var Spinner     = CLI.Spinner;
-var ApiWay  = require('apiway.js')
+var ApiWay  = require('apiway-sdk-js')
 let aw = new ApiWay({});
 let awProject = aw.getProject();
 let awInstance = aw.getInstance();
@@ -73,7 +73,7 @@ function getSchedulesByProject (project) {
     awSchedule.getSchedulesByProject(project._id).then(res => {
       if (res!= null) {
         status.stop()
-        // console.log(res.data.data.schedules)
+        console.log(res.data)
         resolve(res.data.data.schedules)
       }
     }).catch(err => {
@@ -124,7 +124,7 @@ function deleteProject(project) {
 function deleteScheduleInScheduler (schedule) {
   return new Promise ((resolve, reject) => {
     console.log(schedule)
-    awScheduler.deleteSchedule(schedule.schedulerId, schedule._id).then(res => {
+    awScheduler.deleteSchedule(schedule._id).then(res => {
       if (res != null) {
         resolve(schedule)
       }
@@ -143,6 +143,23 @@ function deleteSchedule (schedule) {
       }
     }).catch(err => {
       console.error(err)
+      reject(err)
+    })
+  })
+}
+
+function getSchedule (id) {
+  return new Promise ((resolve, reject) => {
+    var status = new Spinner('Getting a schedule ...');
+    status.start();
+    awSchedule.getSchedule(id).then(res => {
+      if (res!= null) {
+        status.stop()
+        resolve(res.data.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      status.stop()
       reject(err)
     })
   })
@@ -241,6 +258,38 @@ function updateBranch (projectId, branch) {
   })
 }
 
+function addEmailSubscriber (projectId, email) {
+  return new Promise ((resolve, reject) => {
+    let options = {
+      email: email
+    }
+    awProject.addEmailSubscriber(projectId, options).then(res => {
+      if (res != null) {
+        resolve(res.data.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
+function deleteEmailSubscriber (projectId, email) {
+  return new Promise ((resolve, reject) => {
+    let options = {
+      email: email
+    }
+    awProject.deleteEmailSubscriber(projectId, options).then(res => {
+      if (res != null) {
+        resolve(res.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
 function updateSubscriber (projectId, subscriber) {
   return new Promise ((resolve, reject) => {
     let subArr = subscriber.replace(' ','').split(',')
@@ -277,6 +326,7 @@ function selectProject (projects) {
 }
 
 exports.getProject = getProject
+exports.getSchedule = getSchedule
 exports.runProject = runProject
 exports.deleteProject = deleteProject
 exports.deleteSchedule = deleteSchedule
@@ -290,3 +340,5 @@ exports.createSchedule = createSchedule
 exports.updateScheduleCron = updateScheduleCron
 exports.updateSubscriber = updateSubscriber
 exports.updateBranch = updateBranch
+exports.addEmailSubscriber = addEmailSubscriber
+exports.deleteEmailSubscriber = deleteEmailSubscriber
