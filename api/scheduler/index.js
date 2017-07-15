@@ -39,6 +39,18 @@ exports.scheduler = function (options) {
       awApi.getScheduler(options.schedulerId)
         .then((scheduler) => showSchedulerInfo(scheduler))
         .then(() => resolve())
+    } else if (options.delete) {
+      if (options.delete == true) {
+        awApi.getSchedulers()
+          .then((schedulers) => awApi.selectScheduler(schedulers))
+          .then((scheduler) => awApi.deleteScheduler(scheduler))
+          .then((scheduler) => showDeleteResultMessage(scheduler))
+          .then(() => resolve())
+      } else if (options.delete != null) {
+        awApi.deleteScheduler(options.delete)
+          .then((id) => showDeleteResultMessage2(id))
+          .then(() => resolve())
+      }
     }
   })
 }
@@ -47,8 +59,12 @@ function showCreateResultMessage (schedule) {
   console.log(chalk.bold.green(`${confStore.get(conf.LAST_SELECTED_PROJECT)}`) + '\'s new schedule'  + ' is successfully created('  + chalk.green(`${schedule._id}`) + ')')
 }
 
-function showDeleteResultMessage (schedule) {
-  console.log(chalk.bold.green(`${schedule._id}`) + ' is successfully deleted')
+function showDeleteResultMessage (scheduler) {
+  console.log(chalk.bold.green(`${scheduler._id}`) + ' is successfully deleted')
+}
+
+function showDeleteResultMessage2 (id) {
+  console.log(chalk.bold.green(`${id}`) + ' is successfully deleted')
 }
 
 function showSchedulerInfo (scheduler) {

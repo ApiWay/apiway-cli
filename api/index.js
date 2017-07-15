@@ -108,6 +108,18 @@ function promptSchedules (schedules, callback) {
   inquirer.prompt(questions).then(callback);
 }
 
+function promptSchedulers (schedulers, callback) {
+  var questions = [
+    {
+      name: 'scheduler',
+      type: 'list',
+      message: 'Select a scheduler',
+      choices: schedulers
+    }
+  ];
+  inquirer.prompt(questions).then(callback);
+}
+
 function deleteProject(project) {
   return new Promise ((resolve, reject) => {
     awProject.deleteProject(project._id).then(res => {
@@ -140,6 +152,32 @@ function deleteSchedule (schedule) {
     awSchedule.deleteSchedule(schedule._id).then(res => {
       if (res != null) {
         resolve(schedule)
+      }
+    }).catch(err => {
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
+function deleteScheduler (scheduler) {
+  return new Promise ((resolve, reject) => {
+    awScheduler.deleteScheduler(scheduler._id).then(res => {
+      if (res != null) {
+        resolve(scheduler)
+      }
+    }).catch(err => {
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
+function deleteSchedulerById (id) {
+  return new Promise ((resolve, reject) => {
+    awScheduler.deleteScheduler(id).then(res => {
+      if (res != null) {
+        resolve(id)
       }
     }).catch(err => {
       console.error(err)
@@ -194,6 +232,22 @@ function selectSchedule (schedules) {
     })
     promptSchedules(array, (data) => {
       resolve(tmpSchedules.get(data.schedule))
+    })
+  })
+}
+
+function selectScheduler (schedulers) {
+  return new Promise ((resolve, reject) => {
+    var tmpSchedulers = new Map();
+    let array = []
+    schedulers.forEach(scheduler => {
+      if (scheduler._id) {
+        array.push(scheduler._id)
+        tmpSchedulers.set(scheduler._id, scheduler)
+      }
+    })
+    promptSchedulers(array, (data) => {
+      resolve(tmpSchedulers.get(data.scheduler))
     })
   })
 }
@@ -386,12 +440,14 @@ exports.getSchedule = getSchedule
 exports.runProject = runProject
 exports.deleteProject = deleteProject
 exports.deleteSchedule = deleteSchedule
+exports.deleteScheduler = deleteScheduler
 exports.deleteScheduleInScheduler = deleteScheduleInScheduler
 exports.promptProjects = promptProjects
 exports.getSchedulesByProject  = getSchedulesByProject
 exports.getSchedulesByUser = getSchedulesByUser
 exports.selectProject  = selectProject
 exports.selectSchedule = selectSchedule
+exports.selectScheduler = selectScheduler
 exports.createSchedule = createSchedule
 exports.updateScheduleCron = updateScheduleCron
 exports.updateSubscriber = updateSubscriber
