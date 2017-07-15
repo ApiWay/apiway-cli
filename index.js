@@ -10,6 +10,7 @@ var awUser = require('./api/user');
 var awProject = require('./api/project');
 var awInstance = require('./api/instance');
 var awSchedule = require('./api/schedule');
+var awScheduler = require('./api/scheduler');
 var awSubscribe = require('./api/subscribe');
 var util = require('./util');
 
@@ -142,6 +143,26 @@ prog
     }
     confStore.set(conf.OPTIONS, options)
     awSchedule.schedule(options).then((res) => {
+    }, (err) => {
+      showHelp(err)
+    })
+  })
+
+  // the scheduler command
+  .command('scheduler', "Scheduler command for apiway.io")
+  .help('')
+  .option('-l, --list', "Show all of Scheduler list")
+  .option('-i, --schedulerId <schedulerId>',
+    'Show information of Scheduler \n' +
+    '  $ apiway scheduler -i <schedulerId> \n')
+  .option('-d, --delete <schedulerId>', 'Delete a Scheduler with schedulerID')
+  .action((args, options, logger) => {
+    if (!options.list && !options.delete
+      && !options.schedulerId) {
+      showHelp()
+    }
+    confStore.set(conf.OPTIONS, options)
+    awScheduler.scheduler(options).then((res) => {
     }, (err) => {
       showHelp(err)
     })

@@ -325,6 +325,62 @@ function selectProject (projects) {
   })
 }
 
+function startSchedule (schedule) {
+  return new Promise ((resolve, reject) => {
+    var status = new Spinner('Starting schedule ...');
+    status.start();
+    let data = {
+      projectId: project._id,
+      owner: project.owner,
+      cron: cron
+    }
+    awSchedule.startSchedule(data).then(res => {
+      if (res!= null) {
+        status.stop()
+        resolve(res.data.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      status.stop()
+      reject(err)
+    })
+  })
+}
+
+function getSchedulers () {
+  return new Promise ((resolve, reject) => {
+    var status = new Spinner('Getting schedulers ...');
+    status.start();
+    awScheduler.getSchedulers().then(res => {
+      if (res!= null) {
+        status.stop()
+        resolve(res.data.data.schedulers)
+      }
+    }).catch(err => {
+      console.error(err)
+      status.stop()
+      reject(err)
+    })
+  })
+}
+
+function getScheduler (id) {
+  return new Promise ((resolve, reject) => {
+    var status = new Spinner('Getting scheduler ...');
+    status.start();
+    awScheduler.getScheduler(id).then(res => {
+      if (res!= null) {
+        status.stop()
+        resolve(res.data.data)
+      }
+    }).catch(err => {
+      console.error(err)
+      status.stop()
+      reject(err)
+    })
+  })
+}
+
 exports.getProject = getProject
 exports.getSchedule = getSchedule
 exports.runProject = runProject
@@ -342,3 +398,5 @@ exports.updateSubscriber = updateSubscriber
 exports.updateBranch = updateBranch
 exports.addEmailSubscriber = addEmailSubscriber
 exports.deleteEmailSubscriber = deleteEmailSubscriber
+exports.getSchedulers = getSchedulers
+exports.getScheduler = getScheduler
