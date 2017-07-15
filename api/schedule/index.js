@@ -93,25 +93,30 @@ exports.schedule = function (options) {
           .then((schedule) => showDeleteResultMessage(schedule))
           .then(() => resolve())
       }
-    // } else if (options.scheduleId) {
-    //   if (options.projectId != null) {
-    //     awApi.getProject(options.projectId)
-    //       .then((project) => awApi.getSchedulesByProject(project))
-    //       .then((schedules) => awApi.selectSchedule(schedules))
-    //       .then((schedule) => awApi.deleteSchedule(schedule))
-    //       .then((schedule) => awApi.deleteScheduleInScheduler(schedule))
-    //       .then((schedule) => showDeleteResultMessage(schedule))
-    //       .then(() => resolve())
-    //   } else if (options.projectId == undefined) {
-    //     awApi.getProjectsByUser(userId)
-    //       .then((projects) => awApi.selectProject(projects))
-    //       .then((project) => awApi.getSchedulesByProject(project))
-    //       .then((schedules) => awApi.selectSchedule(schedules))
-    //       .then((schedule) => awApi.deleteSchedule(schedule))
-    //       .then((schedule) => awApi.deleteScheduleInScheduler(schedule))
-    //       .then((schedule) => showDeleteResultMessage(schedule))
-    //       .then(() => resolve())
-    //   }
+    } else if (options.start) {
+      if (options.projectId != null) {
+        awApi.getSchedule(options.projectId)
+          .then((schedule) => awApi.deleteScheduleInScheduler(schedule))
+          .then((schedule) => awApi.deleteSchedule(schedule))
+          .then((schedule) => showDeleteResultMessage(schedule))
+          .then(() => resolve())
+      } else if (options.projectId == undefined) {
+        awApi.getProjectsByUser(userId)
+          .then((projects) => awApi.selectProject(projects))
+          .then((project) => awApi.getSchedulesByProject(project))
+          .then((schedules) => awApi.selectSchedule(schedules))
+          .then((schedule) => awApi.stopSchedule(schedule))
+          .then((schedule) => awApi.deleteScheduleInScheduler(schedule))
+          .then((schedule) => showDeleteResultMessage(schedule))
+          .then(() => resolve())
+      }
+    } else if (options.scheduleId) {
+      if (options.scheduleId == true) {
+        reject('Error : Need a scheduleId')
+      }
+      awApi.getSchedule(options.scheduleId)
+        .then((schedule) => showScheduleInfo(schedule))
+        .then(() => resolve())
     }
   })
 }
@@ -156,41 +161,6 @@ function updateScheduleWhen (projectId, when) {
   })
 }
 
-function updateSubscriber (projectId, subscriber) {
-  return new Promise ((resolve, reject) => {
-    let subArr = subscriber.replace(' ','').split(',')
-    let data = {
-      subscriber: subscriber.replace(' ','').split(',')
-    }
-    awProject.updateProject(projectId, data).then(res => {
-      if (res != null) {
-        console.log(chalk.bold.green(`${res.data.data.full_name}`) + ' is successfully updated as follow.')
-        resolve(res.data.data)
-      }
-    }).catch(err => {
-      console.error(err)
-      reject(err)
-    })
-  })
-}
-
-function updateBranch (projectId, branch) {
-  return new Promise ((resolve, reject) => {
-    let data = {
-      default_branch: branch
-    }
-    awProject.updateProject(projectId, data).then(res => {
-      if (res != null) {
-        console.log(chalk.bold.green(`${res.data.data.full_name}`) + ' is successfully updated as follow.')
-        resolve(res.data.data)
-      }
-    }).catch(err => {
-      console.error(err)
-      reject(err)
-    })
-  })
-}
-
 function showCreateResultMessage (schedule) {
   console.log(chalk.bold.green(`${confStore.get(conf.LAST_SELECTED_PROJECT)}`) + '\'s new schedule'  + ' is successfully created('  + chalk.green(`${schedule._id}`) + ')')
 }
@@ -199,9 +169,9 @@ function showDeleteResultMessage (schedule) {
   console.log(chalk.bold.green(`${schedule._id}`) + ' is successfully deleted')
 }
 
-function showProjectInfo (project) {
-  console.log(chalk.bold.yellow('Project Information : '))
-  makeProjectInfoFormat(project)
+function showScheduleInfo (schedule) {
+  console.log(chalk.bold.yellow('Schedule Information : '))
+  makeScheduleInfoFormat(schedule)
 }
 
 function showSchedules (schedules) {
@@ -213,35 +183,12 @@ function showSchedules (schedules) {
 
 function makeScheduleFormat (schedule, index) {
   let split = chalk.blue('|')
-  console.log(index + '. ' + chalk.green(`${confStore.get(conf.LAST_SELECTED_PROJECT)}`) + `${split}ID:${schedule._id}`)
+  console.log(index + '. ' + chalk.green(`${confStore.get(conf.LAST_SELECTED_PROJECT).full_name}`) + `${split}ID:${schedule._id}`)
 }
 
-function makeProjectInfoFormat (project) {
-  Object.keys(project).map(function(key ) {
-    console.log(chalk.blue(`${key}`) + `:${project[key]}`)
+function makeScheduleInfoFormat (schedule) {
+  Object.keys(schedule).map(function(key ) {
+    console.log(chalk.blue(`${key}`) + `:${schedule[key]}`)
   });
-}
-
-function showAddProjectDoneMsg (projectName, projectId) {
-  console.log(chalk.bold.green(`${projectName}`) + ' is successfully added.')
-}
-
-function showInstances (instances) {
-  console.log('[' + chalk.bold.yellow(confStore.get(conf.LAST_ADDED_PROJECT)) + '] Run History >')
-  instances.forEach((instance, i) => {
-    makeInstanceFormat(instance, i)
-  })
-}
-
-function makeInstanceFormat (instance, index) {
-  let status
-  if (instance.status == "PASS") {
-    status = chalk.green(`${instance.status}  `)
-  } else if (instance.status == "FAIL") {
-    status = chalk.magenta(`${instance.status}  `)
-  } else if (instance.status == "BROKEN") {
-    status = chalk.red(`${instance.status}`)
-  }
-  console.log(index + '. ' + status + `:${instance._id}:`)
 }
 

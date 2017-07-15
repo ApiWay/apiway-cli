@@ -101,7 +101,7 @@ prog
   .command('schedule', "Schedule command for apiway.io")
   .help('')
   .option('-p, --projectId <projectId>', 'Specify a projectID')
-  .option('-a, --add', 'Add ad Schedule')
+  .option('-a, --add', 'Add a Schedule')
   .option('-l, --list',
     'Show all of user\'s Schedule\n' +
     '  $ apiway schedule -l \n' +
